@@ -1,0 +1,69 @@
+@import './base.css';
+
+#app {
+  min-width: 480px;
+  font-weight: normal;
+  padding: 5px;
+}
+
+a,
+.blau {
+  text-decoration: none;
+  color: hsla(209.64, 14.4%, 27.5%, 1);
+  transition: 0.4s;
+  padding: 3px;
+  font-weight: 700;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.item {
+  flex-grow: 1;
+  flex-basis: 200;
+}
+
+.outer-border {
+  border: 1px solid black;
+  border-top-color: white;
+  border-radius: 9px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.middle-border {
+  border: 3px solid #978B73;
+  border-radius: 7px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* In einer globalen CSS-Datei oder in beiden Komponenten */
+.same-width {
+  width: 100%; /* oder eine spezifische Breite, z.B. 500px */
+  max-width: 1800px; /* optional, um eine maximale Breite festzulegen */
+  margin: 0 auto; /* zentriert das Element horizontal */
+}
+
+.success-message {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+}
+ 
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(39, 100%, 50%, 0.488);
+  }
+}
+
+.triple-border {
+  padding: 3px; /* Platz für die inneren Border */
+  background-color: #978B73; /* Hintergrundfarbe des Elements */
+  border: 1px solid black; /* Innere schwarze Border */
+  border-radius: 6px;
+}
+
