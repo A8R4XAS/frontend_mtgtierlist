@@ -11,12 +11,18 @@
             </div>
             <div class="mb-3">
               <label for="email" class="form-label">Email:</label>
-              <input type="email" v-model="email" id="email" class="form-control" required />
+              <input type="email" v-model="email" id="email" class="form-control" :class="{ 'is-invalid': error }" required />
             </div>
             <div class="mb-3">
               <label for="password" class="form-label">Password:</label>
               <input type="password" v-model="password" id="password" class="form-control" required />
             </div>
+            <!-- Error Box mit Transition -->
+            <transition name="fade">
+              <div v-if="error" class="alert alert-danger mt-3" role="alert">
+                Username, E-Mail oder Passwort ungültig!
+              </div>
+            </transition>
             <button type="submit" class="btn btn-primary w-100">Sign Up</button>
           </form>
         </div>
@@ -31,11 +37,15 @@ export default {
     return {
       name: '',
       email: '',
-      password: ''
+      password: '',
+      error: false,
+      timeoutId: null as ReturnType<typeof setTimeout> | null
     };
   },
   methods: {
     async signup() {
+      this.error = false;
+      if(this.timeoutId) clearTimeout(this.timeoutId);
       try {
         const response = await fetch('http://localhost:3001/api/auth/signup', {
           method: 'POST',
@@ -51,15 +61,20 @@ export default {
         });
 
         if (response.ok) {
-          alert('Signup successful!');
           this.$router.push('/login');
+        } else if (response.status === 409) {
+          this.error = true;
+          this.timeoutId = setTimeout(() => {
+            this.error = false;
+          }, 3000);
         } else {
-          const error = await response.json();
-          alert(`Signup failed: ${error.message}`);
+          this.error = true;
+          this.timeoutId = setTimeout(() => {
+            this.error = false;
+          }, 3000);
         }
       } catch (error) {
-        console.error('Error signing up', error);
-        alert('An error occurred. Please try again later.');
+        console.error('Error during signup:', error);
       }
     }
   }
@@ -79,5 +94,12 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-size: larger;
   color: black;
+}
+/* einfache Fade-Animation */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 </style>
