@@ -61,7 +61,7 @@ export default {
         });
 
         if (response.ok) {
-          this.$router.push('/login');
+          this.$router.push('/');
         } else if (response.status === 409) {
           this.error = true;
           this.timeoutId = setTimeout(() => {
