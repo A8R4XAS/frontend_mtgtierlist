@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { API_URL } from '@/composables/api';
 import TableComponent from './TableComponent.vue';
 </script>
 
@@ -22,7 +23,7 @@ export default {
     async fetchTableData() {
       try {
 
-        const response = await fetch('http://localhost:3001/api/deck/', {});
+        const response = await fetch(`${API_URL}/deck/`, {});
         const data = await response.json();
 
         this.tableRows = data.map(

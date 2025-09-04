@@ -32,6 +32,8 @@
 </template>
 
 <script lang="ts">
+import { API_URL } from '@/composables/api';
+
 export default {
   data() {
     return {
@@ -47,7 +49,7 @@ export default {
       this.error = false;
       if(this.timeoutId) clearTimeout(this.timeoutId);
       try {
-        const response = await fetch('http://localhost:3001/api/auth/signup', {
+        const response = await fetch(`${API_URL}/auth/signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

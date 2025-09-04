@@ -43,6 +43,8 @@
 </template>
 
 <script lang="ts">
+import { API_URL } from '@/composables/api';
+
 export default {
     data() {
         return {
@@ -64,7 +66,7 @@ export default {
     methods: {
         async submitDeck() {
             try {
-                const response = await fetch(`http://localhost:3001/api/deck/${this.user.id}`, {
+                const response = await fetch(`${API_URL}/deck/${this.user.id}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -95,7 +97,7 @@ export default {
                 const localUser = localStorage.getItem('user');
                 if (!localUser) return;
                 this.user = JSON.parse(localUser);
-                const response = await fetch(`http://localhost:3001/api/user/${this.user.id}`, {
+                const response = await fetch(`${API_URL}/user/${this.user.id}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include'
@@ -110,12 +112,12 @@ export default {
             }
         },
         isBold(elem: string) {
-            // Definiere hier die Elemente, die fettgedruckt sein sollen 
+            // Definiere hier die Elemente, die fettgedruckt sein sollen
             const boldElements = ["AGGRO", "MID-GAME", "LATE-GAME"];
             return boldElements.includes(elem);
         },
         isSmall(elem: string) {
-            // Definiere hier die Elemente, die fettgedruckt sein sollen 
+            // Definiere hier die Elemente, die fettgedruckt sein sollen
             const smallElements = ["Turn 0", "Aggro to Midgame", "Midgame to Lategame", "Wo WinCon?"];
             return smallElements.includes(elem);
         },

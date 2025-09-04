@@ -98,6 +98,8 @@
 
 
 <script lang="ts">
+import { API_URL } from '@/composables/api';
+
 export default {
     data() {
         return {
@@ -117,7 +119,7 @@ export default {
 
         async fetchPlayers() {
             try {
-                const response = await fetch('http://localhost:3001/api/user', {});
+                const response = await fetch(`${API_URL}/user`, {});
                 if (!response.ok) {
                     console.log(response)
                     throw new Error('Network response was not ok')
@@ -132,7 +134,7 @@ export default {
         },
         async fetchDecks() {
             try {
-                const response = await fetch('http://localhost:3001/api/deck', {});
+                const response = await fetch(`${API_URL}/deck`, {});
                 if (!response.ok) {
                     console.log(response)
                     throw new Error('Network response was not ok')
@@ -186,7 +188,7 @@ export default {
             console.log('Request Body:', requestBody); // Überprüfe die gesendeten Daten
 
             try {
-                const response = await fetch('http://localhost:3001/api/game/', {
+                const response = await fetch(`${API_URL}/game/`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody),
@@ -203,8 +205,8 @@ export default {
             } catch (error) {
                 console.error('Error post Game', error);
             }
-        }, 
-        
+        },
+
         // Funktion zum Abrufen der Spieler-ID basierend auf dem Namen
         getPlayerIdByName(playerName: string, players: { name: string; id: number; }[]): number {
             const player = players.find(player => player.name === playerName);

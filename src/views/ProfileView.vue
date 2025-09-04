@@ -3,6 +3,7 @@ import TheNavbar from '@/components/TheNavbar.vue';
 import GameForm from '@/components/TheGameForm.vue';
 import TableComponent from '@/components/TableComponent.vue';
 import DeckForm from '@/components/TheDeckForm.vue';
+import { API_URL } from '@/composables/api';
 </script>
 
 <template>
@@ -19,14 +20,14 @@ import DeckForm from '@/components/TheDeckForm.vue';
           <GameForm />
         </div>
       </div>
-    
+
       <div class="row justify-content-center mb-3 g-1">
         <div class="col-12">
               <!-- TODO:  Profile-Form auslagern und dann triple border drum.
-                Prüfe ob bei Deckfrom es identisch ist!            
+                Prüfe ob bei Deckfrom es identisch ist!
                 Auslagern weil es bei GameForm auch so ist.
               -->
-          <div class="triple-border">           
+          <div class="triple-border">
             <div class="profile-form">
               <form @submit.prevent="updateUser">
                 <div class="mb-3">
@@ -53,14 +54,14 @@ import DeckForm from '@/components/TheDeckForm.vue';
 
       <div class="row justify-content-center mb-3 g-1">
         <div class="col-12">
-          <TableComponent 
-            :title="tableTitle" 
-            :headers="tableHeaders" 
-            :rows="tableRows" 
-            :rowsPerPage="10" 
-            :userColumn="false" 
-            :userColumns="[0]" 
-            @delete-row="deleteDeck" 
+          <TableComponent
+            :title="tableTitle"
+            :headers="tableHeaders"
+            :rows="tableRows"
+            :rowsPerPage="10"
+            :userColumn="false"
+            :userColumns="[0]"
+            @delete-row="deleteDeck"
             :font-size="'25px'"
           />
         </div>
@@ -94,7 +95,7 @@ export default {
         const localUser = localStorage.getItem('user');
         if (!localUser) return;
         this.user = JSON.parse(localUser);
-        const response = await fetch(`http://localhost:3001/api/user/${this.user.id}`, {
+        const response = await fetch(`${API_URL}/user/${this.user.id}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
@@ -110,7 +111,7 @@ export default {
     },
     async updateUser() {
       try {
-        const response = await fetch(`http://localhost:3001/api/user/${this.user.id}`, {
+        const response = await fetch(`${API_URL}//user/${this.user.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', },
           body: JSON.stringify(this.user),
@@ -129,7 +130,7 @@ export default {
     },
     async fetchTableData() {
       try {
-        const response = await fetch('http://localhost:3001/api/deck/', {});
+        const response = await fetch(`${API_URL}/deck/`, {});
         const data = await response.json();
         this.tableRows = data.map(
           (Deck: {
@@ -156,7 +157,7 @@ export default {
     },
     async deleteDeck(id: number) {
       try {
-        const response = await fetch(`http://localhost:3001/api/deck/${id}`, {
+        const response = await fetch(`${API_URL}/deck/${id}`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
@@ -166,7 +167,7 @@ export default {
           console.log(response);
           throw new Error('Network response was not ok');
         }
-        this.fetchTableData(); // Tabelle nach dem Löschen aktualisieren 
+        this.fetchTableData(); // Tabelle nach dem Löschen aktualisieren
       } catch (error) {
         console.error('Fehler beim Löschen des Decks: ', error);
       }

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import TableComponent from '@/components/TableComponent.vue';
 import TheNavbar from '@/components/TheNavbar.vue';
+import { API_URL } from '@/composables/api';
 </script>
 
 <template>
@@ -36,7 +37,7 @@ export default {
     methods: {
         async fetchTableData() {
             try {
-                const response = await fetch('http://localhost:3001/api/user/', {});
+                const response = await fetch(`${API_URL}/api/user/`, {});
                 const data = await response.json();
                 this.tableRows = data.map(
                     (player: { id: number; name: string; }) => [player.id, player.name]

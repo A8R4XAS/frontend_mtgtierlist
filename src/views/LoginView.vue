@@ -1,8 +1,8 @@
 <template>
   <div class="cardOfTheDay">
-    <img 
-      alt="Mtg logo" 
-      class="logo" 
+    <img
+      alt="Mtg logo"
+      class="logo"
       src="@/assets/mtg color.svg"
       :style="{ width: loginWidth + 'px', height: loginWidth/2 + 'px' }"
     />
@@ -25,6 +25,8 @@
 </template>
 
 <script lang="ts">
+import { API_URL } from '@/composables/api'
+
 export default {
   data() {
     return {
@@ -51,7 +53,7 @@ export default {
     },
     async login() {
       try {
-        const response = await fetch('http://localhost:3001/api/auth/login', {
+        const response = await fetch(`${API_URL}/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

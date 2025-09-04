@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import The1vs1Table from '@/components/The1vs1Table.vue';
 import TheNavbar from '@/components/TheNavbar.vue';
+import { API_URL } from '@/composables/api';
+
 </script>
 
 <template>
@@ -32,14 +34,14 @@ export default {
   data() {
     return {
       tableTitle: 'Benutzerliste',
-      tableHeaders: ['Name', 'Email'], 
+      tableHeaders: ['Name', 'Email'],
       tableRows: []
     };
   },
   methods: {
     async fetchTableData() {
       try {
-        const response = await fetch('http://localhost:3001/api/user/',{});
+        const response = await fetch(`${API_URL}/user/`,{});
         const data = await response.json();
         this.tableRows = data.map(
           (user: { name: string; email: string; }) => [user.name, user.email]

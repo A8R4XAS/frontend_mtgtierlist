@@ -3,6 +3,7 @@ import TheGameForm from '@/components/TheGameForm.vue';
 import TheDeckForm from '@/components/TheDeckForm.vue';
 import { useAuth } from '@/composables/useAuth';
 import { ref } from 'vue';
+import { API_URL } from '@/composables/api';
 
 const { loggedIn, logout } = useAuth();
 
@@ -90,7 +91,7 @@ export default {
         const localUser = localStorage.getItem('user');
         if (!localUser) return;
         this.user = JSON.parse(localUser);
-        const response = await fetch(`http://localhost:3001/api/user/${this.user.id}`, {
+        const response = await fetch(`${API_URL}/user/${this.user.id}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
