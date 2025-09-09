@@ -130,7 +130,11 @@ export default {
     },
     async fetchTableData() {
       try {
-        const response = await fetch(`${API_URL}/deck/`, {});
+        const response = await fetch(`${API_URL}/deck/`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
         const data = await response.json();
         this.tableRows = data.map(
           (Deck: {
