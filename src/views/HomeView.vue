@@ -41,7 +41,11 @@ export default {
   methods: {
     async fetchTableData() {
       try {
-        const response = await fetch(`${API_URL}/user/`,{});
+        const response = await fetch(`${API_URL}/user/`,{
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
         const data = await response.json();
         this.tableRows = data.map(
           (user: { name: string; email: string; }) => [user.name, user.email]
