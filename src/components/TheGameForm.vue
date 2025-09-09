@@ -119,7 +119,11 @@ export default {
 
         async fetchPlayers() {
             try {
-                const response = await fetch(`${API_URL}/user`, {});
+                const response = await fetch(`${API_URL}/user`, {
+                  method: 'GET',
+                  headers: { 'Content-Type': 'application/json'},
+                  credentials: 'include'
+                });
                 if (!response.ok) {
                     console.log(response)
                     throw new Error('Network response was not ok')
@@ -134,7 +138,11 @@ export default {
         },
         async fetchDecks() {
             try {
-                const response = await fetch(`${API_URL}/deck`, {});
+                const response = await fetch(`${API_URL}/deck`, {
+                  method: 'GET',
+                  headers: { 'Content-Type': 'application/json'},
+                  credentials: 'include'
+                });
                 if (!response.ok) {
                     console.log(response)
                     throw new Error('Network response was not ok')
