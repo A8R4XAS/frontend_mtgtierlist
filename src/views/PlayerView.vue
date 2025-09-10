@@ -37,7 +37,7 @@ export default {
     methods: {
         async fetchTableData() {
             try {
-                const response = await fetch(`${API_URL}/api/user/`, {
+                const response = await fetch(`${API_URL}/user/`, {
                   method: 'GET',
                   headers: { 'Content-Type': 'application/json' },
                   credentials: 'include'
