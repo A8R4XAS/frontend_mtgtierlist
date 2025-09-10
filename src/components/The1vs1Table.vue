@@ -19,7 +19,8 @@ export default {
       user: {
         id: null,
         name: ''
-      }
+      },
+      errorMessage: ''
     };
   },
   methods: {
@@ -37,9 +38,13 @@ export default {
           credentials: 'include'
         });
 
-        console.log(response);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Fehler vom Server:', errorText);
+          this.errorMessage = 'Spiel konnte nicht geladen werden';
+          return;
+        }
         const data = await response.json();
-        console.log('Es kommen Daten aus 1vs1 ',data);
 
         this.tableRows = data.map(
           (Spiel: {
