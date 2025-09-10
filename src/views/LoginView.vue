@@ -71,6 +71,7 @@ export default {
         }
         const data = await response.json()
         localStorage.setItem('user', JSON.stringify(data))
+        await new Promise(resolve => setTimeout(resolve, 100)); // kurze Pause für Session-Cookie
         this.$router.push('/')
       } catch (error) {
         console.error('Error logging in', error)
