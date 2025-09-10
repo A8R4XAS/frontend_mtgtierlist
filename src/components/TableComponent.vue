@@ -23,6 +23,7 @@
                   <span v-if="sortColumn === index">
                     {{ sortOrder === 'asc' ? '▲' : '▼' }}
                   </span>
+                  <span v-else>⇅</span>
                 </th>
                 <th v-if="activeUpdate">Aktionen</th> <!-- Neue Spalte für Aktionen -->
               </tr>
@@ -168,7 +169,7 @@ export default {
       if (this.currentPage > 1) this.currentPage--;
     },
     deleteRow(id: number) {
-      this.$emit('delete-row', id); // Event auslösen, um die Zeile zu löschen 
+      this.$emit('delete-row', id); // Event auslösen, um die Zeile zu löschen
     },
     updateRow(id: number) {
       this.$emit('update-row', id); // Event auslösen, um Zeile zu bearbeiten
