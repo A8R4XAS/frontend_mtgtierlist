@@ -11,18 +11,12 @@
             </div>
             <div class="mb-3">
               <label for="email" class="form-label">Email:</label>
-              <input type="email" v-model="email" id="email" class="form-control" :class="{ 'is-invalid': error }" required />
+              <input type="email" v-model="email" id="email" class="form-control" required />
             </div>
             <div class="mb-3">
               <label for="password" class="form-label">Password:</label>
               <input type="password" v-model="password" id="password" class="form-control" required />
             </div>
-            <!-- Error Box mit Transition -->
-            <transition name="fade">
-              <div v-if="error" class="alert alert-danger mt-3" role="alert">
-                Username, E-Mail oder Passwort ungültig!
-              </div>
-            </transition>
             <button type="submit" class="btn btn-primary w-100">Sign Up</button>
           </form>
         </div>
@@ -32,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { API_URL } from '@/composables/api';
+import { fetchWrapper } from '@/composables/fetchWrapper';
 
 export default {
   data() {
@@ -40,43 +34,17 @@ export default {
       name: '',
       email: '',
       password: '',
-      error: false,
-      timeoutId: null as ReturnType<typeof setTimeout> | null
+      errorMessage: ''
     };
   },
   methods: {
     async signup() {
-      this.error = false;
-      if(this.timeoutId) clearTimeout(this.timeoutId);
       try {
-        const response = await fetch(`${API_URL}/auth/signup`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            name: this.name,
-            email: this.email,
-            password: this.password
-          }),
-          credentials: 'include'
-        });
-
-        if (response.ok) {
-          this.$router.push('/');
-        } else if (response.status === 409) {
-          this.error = true;
-          this.timeoutId = setTimeout(() => {
-            this.error = false;
-          }, 3000);
-        } else {
-          this.error = true;
-          this.timeoutId = setTimeout(() => {
-            this.error = false;
-          }, 3000);
-        }
-      } catch (error) {
-        console.error('Error during signup:', error);
+        await fetchWrapper('/auth/signup', { name: this.name, email: this.email, password: this.password }, 'POST');
+        await new Promise(resolve => setTimeout(resolve, 100)); // kurze Pause für Session-Cookie
+        this.$router.push('/');
+      } catch  {
+        this.errorMessage = 'Fehler beim Signup';
       }
     }
   }
@@ -96,12 +64,5 @@ export default {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   font-size: larger;
   color: black;
-}
-/* einfache Fade-Animation */
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.5s;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
 }
 </style>

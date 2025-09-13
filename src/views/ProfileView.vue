@@ -3,7 +3,8 @@ import TheNavbar from '@/components/TheNavbar.vue';
 import GameForm from '@/components/TheGameForm.vue';
 import TableComponent from '@/components/TableComponent.vue';
 import DeckForm from '@/components/TheDeckForm.vue';
-import { API_URL } from '@/composables/api';
+
+import { fetchWrapper } from '@/composables/fetchWrapper';
 </script>
 
 <template>
@@ -86,56 +87,37 @@ export default {
         password: '',
         name: ''
       },
-      saveSuccess: false
+      saveSuccess: false,
+      errorMessage: ''
     };
   },
   methods: {
+    
     async fetchUser() {
       try {
         const localUser = localStorage.getItem('user');
         if (!localUser) return;
         this.user = JSON.parse(localUser);
-        const response = await fetch(`${API_URL}/user/${this.user.id}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include'
-        });
-        if (!response.ok) {
-          console.log(response)
-          throw new Error('Network response was not ok')
-        }
-        this.user = await response.json();
-      } catch (error) {
-        console.error('Fehler beim Laden der Benutzerdaten: ', error)
+
+        this.user = await fetchWrapper(`/user/${this.user.id}`);
+      } catch {
+        this.errorMessage = 'Fehler beim Laden der Benutzerdaten';
       }
     },
+
     async updateUser() {
       try {
-        const response = await fetch(`${API_URL}//user/${this.user.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', },
-          body: JSON.stringify(this.user),
-          credentials: 'include'
-        });
-        if (!response.ok) {
-          alert('Fehler beim Updaten')
-          throw new Error('Network response was not ok')
-        }
+        await fetchWrapper(`/user/${this.user.id}`, this.user, 'PUT');
         this.saveSuccess = true;
         setTimeout(() => { this.saveSuccess = false }, 3000);
-      } catch (error) {
-        console.error('Fehler beim Updaten der Benutzerdaten', error);
-        this.saveSuccess = false;
+      } catch {
+        this.errorMessage = 'Fehler beim Updaten';
       }
     },
+
     async fetchTableData() {
       try {
-        const response = await fetch(`${API_URL}/deck/`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include'
-        });
-        const data = await response.json();
+        const data = await fetchWrapper('/deck/');
         this.tableRows = data.map(
           (Deck: {
             id: number;
@@ -153,27 +135,20 @@ export default {
               Deck.tempo,
               Deck.tier,
               Deck.weakness
-            ]);
-      } catch (error) {
-        console.error('Fehler beim Laden der Userdaten: ', error)
+            ]
+        );
+      } catch {
+        this.errorMessage = 'Fehler beim Laden der Userdaten';
       }
 
     },
+
     async deleteDeck(id: number) {
       try {
-        const response = await fetch(`${API_URL}/deck/${id}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          console.log(response);
-          throw new Error('Network response was not ok');
-        }
+        await fetchWrapper(`/deck/${id}`, undefined, 'DELETE');
         this.fetchTableData(); // Tabelle nach dem Löschen aktualisieren
-      } catch (error) {
-        console.error('Fehler beim Löschen des Decks: ', error);
+      } catch {
+        this.errorMessage = 'Fehler beim Löschen des Decks';
       }
     }
   },

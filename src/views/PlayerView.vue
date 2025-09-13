@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TableComponent from '@/components/TableComponent.vue';
 import TheNavbar from '@/components/TheNavbar.vue';
-import { API_URL } from '@/composables/api';
+import { fetchWrapper } from '@/composables/fetchWrapper';
 </script>
 
 <template>
@@ -31,23 +31,19 @@ export default {
         return {
             tableTitle: 'Spieler',
             tableHeaders: ['ID', 'Name'],
-            tableRows: []
+            tableRows: [],
+            errorMessage: ''
         };
     },
     methods: {
         async fetchTableData() {
             try {
-                const response = await fetch(`${API_URL}/user/`, {
-                  method: 'GET',
-                  headers: { 'Content-Type': 'application/json' },
-                  credentials: 'include'
-                });
-                const data = await response.json();
+                const data = await fetchWrapper('/user/');
                 this.tableRows = data.map(
                     (player: { id: number; name: string; }) => [player.id, player.name]
                 );
-            } catch (error) {
-                console.error('Fehler beim Laden der Spielerdaten: ', error)
+            } catch {
+              this.errorMessage = 'Fehler beim Laden der Spielerdaten: ';
             }
         }
     },

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import The1vs1Table from '@/components/The1vs1Table.vue';
 import TheNavbar from '@/components/TheNavbar.vue';
-import { API_URL } from '@/composables/api';
+import { fetchWrapper } from '@/composables/fetchWrapper';
 
 </script>
 
@@ -35,23 +35,19 @@ export default {
     return {
       tableTitle: 'Benutzerliste',
       tableHeaders: ['Name', 'Email'],
-      tableRows: []
+      tableRows: [],
+      errorMessage: ''
     };
   },
   methods: {
     async fetchTableData() {
       try {
-        const response = await fetch(`${API_URL}/user/`,{
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include'
-        });
-        const data = await response.json();
+        const data = await fetchWrapper('/user/');
         this.tableRows = data.map(
           (user: { name: string; email: string; }) => [user.name, user.email]
         );
-      } catch (error) {
-        console.error('Fehler beim Laden der Userdaten: ', error)
+      } catch {
+        this.errorMessage='Fehler beim Laden der Usertabelle'
       }
     }
   },
