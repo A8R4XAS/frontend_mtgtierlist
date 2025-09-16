@@ -3,7 +3,7 @@ import TheGameForm from '@/components/TheGameForm.vue';
 import TheDeckForm from '@/components/TheDeckForm.vue';
 import { useAuth } from '@/composables/useAuth';
 import { ref } from 'vue';
-import { API_URL } from '@/composables/api';
+import { fetchWrapper } from '@/composables/fetchWrapper';
 
 const { loggedIn, logout } = useAuth();
 
@@ -91,16 +91,7 @@ export default {
         const localUser = localStorage.getItem('user');
         if (!localUser) return;
         this.user = JSON.parse(localUser);
-        const response = await fetch(`${API_URL}/user/${this.user.id}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include'
-        });
-        if (!response.ok) {
-          console.log(response)
-          throw new Error('Network response was not ok')
-        }
-        this.user = await response.json();
+        this.user = await fetchWrapper(`/user/${this.user.id}`);
       } catch (error) {
         console.error('Fehler beim Laden der Benutzerdaten: ', error)
       }

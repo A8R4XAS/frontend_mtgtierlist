@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import TableComponent from './TableComponent.vue';
+import { fetchWrapper } from '@/composables/fetchWrapper';
 </script>
 
 <template>
@@ -30,21 +31,7 @@ export default {
         if (!localUser) return;
         this.user = JSON.parse(localUser);
 
-        const response = await fetch(`http://localhost:3001/api/game/${this.user.id}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-           },
-          credentials: 'include'
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Fehler vom Server:', errorText);
-          this.errorMessage = 'Spiel konnte nicht geladen werden';
-          return;
-        }
-        const data = await response.json();
+        const data = await fetchWrapper(`/game/${this.user.id}`);
 
         this.tableRows = data.map(
           (Spiel: {
