@@ -98,7 +98,7 @@
 
 
 <script lang="ts">
-import { API_URL } from '@/composables/api';
+import { fetchWrapper } from '@/composables/fetchWrapper';
 
 export default {
     data() {
@@ -119,35 +119,16 @@ export default {
 
         async fetchPlayers() {
             try {
-                const response = await fetch(`${API_URL}/user`, {
-                  method: 'GET',
-                  headers: { 'Content-Type': 'application/json'},
-                  credentials: 'include'
-                });
-                if (!response.ok) {
-                    console.log(response)
-                    throw new Error('Network response was not ok')
-                }
-                const data = await response.json();
+                const data = await fetchWrapper('/user');
                 this.player_data = data;
                 this.player_name = data.map((player: { name: string; }) => player.name);
-
             } catch (error) {
                 console.error('Error fetching players', error)
             }
         },
         async fetchDecks() {
             try {
-                const response = await fetch(`${API_URL}/deck`, {
-                  method: 'GET',
-                  headers: { 'Content-Type': 'application/json'},
-                  credentials: 'include'
-                });
-                if (!response.ok) {
-                    console.log(response)
-                    throw new Error('Network response was not ok')
-                }
-                const data = await response.json();
+                const data = await fetchWrapper('/deck');
                 this.deck_data = data;
                 this.deck_name = data.map((deck: { commander: string; }) => deck.commander);
             } catch (error) {
@@ -196,20 +177,7 @@ export default {
             console.log('Request Body:', requestBody); // Überprüfe die gesendeten Daten
 
             try {
-                const response = await fetch(`${API_URL}/game/`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody),
-                    credentials: 'include'
-                });
-
-                if (!response.ok) {
-                    console.log(response);
-                    throw new Error('Network response was not ok');
-                } else {
-                    console.log(response);
-                }
-
+                await fetchWrapper('/game/', requestBody, 'POST');
             } catch (error) {
                 console.error('Error post Game', error);
             }

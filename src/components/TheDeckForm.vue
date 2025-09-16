@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { API_URL } from '@/composables/api';
+import { fetchWrapper } from '@/composables/fetchWrapper';
 
 export default {
     data() {
@@ -66,28 +66,17 @@ export default {
     methods: {
         async submitDeck() {
             try {
-                const response = await fetch(`${API_URL}/deck/${this.user.id}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        owner: this.user.id,
-                        commander: this.commander,
-                        thema: this.thema,
-                        gameplan: this.gameplan,
-                        tempo: this.tempo,
-                        tier: this.tier,
-                        weakness: this.weakness
-                    }),
-                    credentials: 'include'
-                })
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok')
-                }
-
+                await fetchWrapper(`/deck/${this.user.id}`, {
+                    owner: this.user.id,
+                    commander: this.commander,
+                    thema: this.thema,
+                    gameplan: this.gameplan,
+                    tempo: this.tempo,
+                    tier: this.tier,
+                    weakness: this.weakness
+                }, 'POST');
                 this.saveSuccess = true;
                 setTimeout(() => { this.saveSuccess = false }, 3000);
-
             } catch (error) {
                 console.error('Error post Game', error)
             }
@@ -97,16 +86,7 @@ export default {
                 const localUser = localStorage.getItem('user');
                 if (!localUser) return;
                 this.user = JSON.parse(localUser);
-                const response = await fetch(`${API_URL}/user/${this.user.id}`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include'
-                });
-                if (!response.ok) {
-                    console.log(response)
-                    throw new Error('Network response was not ok')
-                }
-                this.user = await response.json();
+                this.user = await fetchWrapper(`/user/${this.user.id}`);
             } catch (error) {
                 console.error('Fehler beim Laden der Benutzerdaten: ', error)
             }

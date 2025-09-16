@@ -25,14 +25,15 @@
 </template>
 
 <script lang="ts">
-import { API_URL } from '@/composables/api'
+import { fetchWrapper } from '@/composables/fetchWrapper'
 
 export default {
   data() {
     return {
       email: '',
       password: '',
-      loginWidth: 0
+      loginWidth: 0,
+      errorMessage: ''
     }
   },
   mounted() {
@@ -53,28 +54,17 @@ export default {
     },
     async login() {
       try {
-        const response = await fetch(`${API_URL}/auth/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            email: this.email,
-            password: this.password
-          }),
-          credentials: 'include'
-        })
+        const data = await fetchWrapper(
+          '/auth/login',
+          { email: this.email, password: this.password },
+          'POST'
+        )
 
-        if (!response.ok) {
-          console.log(response)
-          throw new Error('Network response was not ok')
-        }
-        const data = await response.json()
         localStorage.setItem('user', JSON.stringify(data))
         await new Promise(resolve => setTimeout(resolve, 100)); // kurze Pause für Session-Cookie
         this.$router.push('/')
-      } catch (error) {
-        console.error('Error logging in', error)
+      } catch {
+        this.errorMessage ='Error logging in'
       }
     }
   }
