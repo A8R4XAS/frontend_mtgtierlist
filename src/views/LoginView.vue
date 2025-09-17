@@ -63,8 +63,9 @@ export default {
         localStorage.setItem('user', JSON.stringify(data))
         await new Promise(resolve => setTimeout(resolve, 100)); // kurze Pause für Session-Cookie
         this.$router.push('/')
-      } catch {
-        this.errorMessage ='Error logging in'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
+        this.errorMessage = error.message || 'Error logging in'
       }
     }
   }
