@@ -8,7 +8,7 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await fetchWrapper('/auth/logout', undefined, 'POST');
+      await fetchWrapper('/auth/logout', 'POST');
       localStorage.removeItem('user');
       loggedIn.value = false;
       router.push('/login');
