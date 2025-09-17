@@ -69,7 +69,6 @@ export default {
                 name: string;
               }
             }
-
           }) => [
               Spiel.id,
               Spiel.user_deck1.user,
@@ -77,11 +76,13 @@ export default {
               Spiel.user_deck2.user,
               Spiel.user_deck2.deck,
               Spiel.winner
-            ]);
-      } catch (error) {
-        console.error('Fehler beim Laden der Tabellendaten: ', error);
+            ]
+        );
+      } catch {
+        this.errorMessage='Fehler beim Laden der Tabellendaten'
         this.tableRows = [];
       }
+
     }
   },
   created() {
