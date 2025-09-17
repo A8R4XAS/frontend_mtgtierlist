@@ -52,10 +52,7 @@ export default {
               id: number;
               user: {
                 id: number;
-                user: {
-                  id: number;
-                  name: string;
-                };
+                name: string;
               };
               deck: {
                 id: number;

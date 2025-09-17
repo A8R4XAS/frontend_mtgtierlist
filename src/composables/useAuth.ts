@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { fetchWrapper } from '@/composables/fetchWrapper';
 
 export function useAuth() {
   const loggedIn = ref(localStorage.getItem('user') !== null);
@@ -7,18 +8,10 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        localStorage.removeItem('user');
-        loggedIn.value = false;
-        router.push('/login');
-      } else {
-        alert('Logout failed. Please try again.');
-      }
+      await fetchWrapper('/auth/logout', undefined, 'POST');
+      localStorage.removeItem('user');
+      loggedIn.value = false;
+      router.push('/login');
     } catch (error) {
       console.error('Error logging out', error);
       alert('An error occurred. Please try again later.');
