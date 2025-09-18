@@ -63,7 +63,7 @@ import { fetchWrapper } from '@/composables/fetchWrapper';
             :userColumn="false"
             :userColumns="[0]"
             @delete-row="deleteDeck"
-            :font-size="'25px'"
+            :font-size="'14px'"
           />
         </div>
       </div>
@@ -79,7 +79,7 @@ export default {
   data() {
     return {
       tableTitle: 'Deine Decks',
-      tableHeaders: ['ID', 'Commander', 'Thema', 'Gameplan', 'Tempo', 'Tier', 'Schwäche', ' '],
+      tableHeaders: ['ID', 'Commander', 'Thema', 'Gameplan', 'Tempo', 'Tier', 'Schwäche'],
       tableRows: [],
       user: {
         id: null,
@@ -92,7 +92,7 @@ export default {
     };
   },
   methods: {
-    
+
     async fetchUser() {
       try {
         const localUser = localStorage.getItem('user');

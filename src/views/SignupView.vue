@@ -1,7 +1,7 @@
 <template>
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
+  <div class="container-fluid">
+    <div class="row justify-content-center mb-3">
+      <div class="col-md-9">
         <div class="signup">
           <h2>Sign Up</h2>
           <form @submit.prevent="signup">
@@ -17,7 +17,7 @@
               <label for="password" class="form-label">Password:</label>
               <input type="password" v-model="password" id="password" class="form-control" required />
             </div>
-            <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+              <button type="submit" class="btn btn-primary signup-btn">Sign Up</button>
           </form>
         </div>
       </div>
@@ -65,4 +65,11 @@ export default {
   font-size: larger;
   color: black;
 }
+
+.signup-btn {
+  width: 33%;
+  display: block;
+  margin: 0 auto;
+}
+
 </style>
