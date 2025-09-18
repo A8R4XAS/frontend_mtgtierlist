@@ -18,7 +18,12 @@ export async function fetchWrapper(url:string, body?:any, methodType: string = '
       throw new Error(error || 'Network response was not ok');
     }
 
-    return await response.json();
+    // Bei 204 oder leerem Body einfach null zurückgeben
+    if (response.status === 204) {
+      return null;
+    }
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
 
   } catch (error) {
     console.error('Fetch error:', error);
