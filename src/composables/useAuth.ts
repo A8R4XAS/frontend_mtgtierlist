@@ -8,13 +8,12 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await fetchWrapper('/auth/logout', 'POST');
+      await fetchWrapper('/auth/logout', {}, 'POST');
       localStorage.removeItem('user');
       loggedIn.value = false;
       router.push('/login');
     } catch (error) {
       console.error('Error logging out', error);
-      alert('An error occurred. Please try again later.');
     }
   };
 
