@@ -14,7 +14,6 @@ export function useAuth() {
       router.push('/login');
     } catch (error) {
       console.error('Error logging out', error);
-      alert('An error occurred. Please try again later.');
     }
   };
 
