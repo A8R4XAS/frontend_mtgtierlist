@@ -1,10 +1,109 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import TheNavbar from '@/components/TheNavbar.vue';
 import GameForm from '@/components/TheGameForm.vue';
 import TableComponent from '@/components/TableComponent.vue';
 import DeckForm from '@/components/TheDeckForm.vue';
+import { userApi, deckApi } from '@/composables/api';
 
-import { fetchWrapper } from '@/composables/fetchWrapper';
+// Tabellen-Konfiguration
+const tableTitle = ref('Deine Decks');
+const tableHeaders = ref(['ID', 'Commander', 'Thema', 'Gameplan', 'Tempo', 'Tier', 'Schwäche']);
+const tableRows = ref<(string | number)[][]>([]);
+
+interface LocalUser {
+  id: number;
+  email: string;
+  password: string;
+  name: string;
+}
+
+// Benutzerdaten
+const user = ref<LocalUser>({
+  id: null as unknown as number,
+  email: '',
+  password: '',
+  name: ''
+});
+
+// UI-Status
+const saveSuccess = ref(false);
+const errorMessage = ref('');
+
+// Benutzer laden
+const fetchUser = async () => {
+  try {
+    const localUser = localStorage.getItem('user');
+    if (!localUser) return;
+    const userData = JSON.parse(localUser);
+    const apiUser = await userApi.get(userData.id);
+    user.value = {
+      id: userData.id,
+      email: userData.email,
+      password: '',
+      name: apiUser.username
+    };
+    await fetchDecks(userData.id);
+  } catch (error) {
+    console.error('Fehler beim Laden des Benutzers:', error);
+    errorMessage.value = 'Fehler beim Laden der Benutzerdaten';
+  }
+};
+
+// Benutzer aktualisieren
+const updateUser = async () => {
+  try {
+    if (!user.value.id) return;
+    await userApi.update(user.value.id, {
+      email: user.value.email,
+      username: user.value.name
+    });
+    saveSuccess.value = true;
+    setTimeout(() => {
+      saveSuccess.value = false;
+    }, 3000);
+  } catch (error) {
+    console.error('Fehler beim Aktualisieren des Benutzers:', error);
+    errorMessage.value = 'Fehler beim Speichern der Änderungen';
+  }
+};
+
+// Decks laden
+const fetchDecks = async (userId: number) => {
+  try {
+    const decks = await deckApi.getByOwner(userId);
+    tableRows.value = decks.map(deck => [
+      deck.id,
+      deck.commander,
+      deck.thema || '',
+      deck.gameplan || '',
+      deck.tempo || '',
+      deck.tier?.toString() || '',
+      deck.weaknesses || ''
+    ]);
+  } catch (error) {
+    console.error('Fehler beim Laden der Decks:', error);
+    errorMessage.value = 'Fehler beim Laden der Decks';
+  }
+};
+
+// Deck löschen
+const deleteDeck = async (deckId: number) => {
+  try {
+    await deckApi.delete(deckId);
+    if (user.value.id) {
+      await fetchDecks(user.value.id);
+    }
+  } catch (error) {
+    console.error('Fehler beim Löschen des Decks:', error);
+    errorMessage.value = 'Fehler beim Löschen des Decks';
+  }
+};
+
+// Komponente initialisieren
+onMounted(() => {
+  fetchUser();
+});
 </script>
 
 <template>
@@ -74,91 +173,6 @@ import { fetchWrapper } from '@/composables/fetchWrapper';
 </template>
 
 
-<script lang="ts">
-export default {
-  data() {
-    return {
-      tableTitle: 'Deine Decks',
-      tableHeaders: ['ID', 'Commander', 'Thema', 'Gameplan', 'Tempo', 'Tier', 'Schwäche'],
-      tableRows: [],
-      user: {
-        id: null,
-        email: '',
-        password: '',
-        name: ''
-      },
-      saveSuccess: false,
-      errorMessage: ''
-    };
-  },
-  methods: {
-
-    async fetchUser() {
-      try {
-        const localUser = localStorage.getItem('user');
-        if (!localUser) return;
-        this.user = JSON.parse(localUser);
-
-        this.user = await fetchWrapper(`/user/${this.user.id}`);
-      } catch {
-        this.errorMessage = 'Fehler beim Laden der Benutzerdaten';
-      }
-    },
-
-    async updateUser() {
-      try {
-        await fetchWrapper(`/user/${this.user.id}`, this.user, 'PUT');
-        this.saveSuccess = true;
-        setTimeout(() => { this.saveSuccess = false }, 3000);
-      } catch {
-        this.errorMessage = 'Fehler beim Updaten';
-      }
-    },
-
-    async fetchTableData() {
-      try {
-        const data = await fetchWrapper('/deck/');
-        this.tableRows = data.map(
-          (Deck: {
-            id: number;
-            commander: string;
-            thema: string;
-            gameplan: string;
-            tempo: string;
-            tier: number;
-            weakness: string;
-          }) => [
-              Deck.id,
-              Deck.commander,
-              Deck.thema,
-              Deck.gameplan,
-              Deck.tempo,
-              Deck.tier,
-              Deck.weakness
-            ]
-        );
-      } catch {
-        this.errorMessage = 'Fehler beim Laden der Userdaten';
-      }
-
-    },
-
-    async deleteDeck(id: number) {
-      try {
-        await fetchWrapper(`/deck/${id}`, undefined, 'DELETE');
-        this.fetchTableData(); // Tabelle nach dem Löschen aktualisieren
-      } catch {
-        this.errorMessage = 'Fehler beim Löschen des Decks';
-      }
-    }
-  },
-  created() {
-    this.fetchUser();
-    this.fetchTableData();
-  }
-}
-</script>
-
 <style scoped>
 .profile-form {
   width: 100%;
@@ -167,18 +181,22 @@ export default {
   background: url(../assets/background_textfeld.jpg) no-repeat center center fixed, var(--color-background);
   background-size: cover;
   background-color: var(--color-background);
-  /* Fallback-Hintergrundfarbe */
   transition:
     color 0.5s,
     background-color 0.5s;
   border-radius: 4px;
-  /* Hier die Ecken abrunden */
   padding: 15px;
-  /* Optionales Padding, um etwas Abstand innerhalb des Navs zu schaffen */
   border: 1px solid black;
-  /* Schwarzer Rand hinzufügen */
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
+.success-message {
+  color: #28a745;
+  font-weight: bold;
+}
 
+.error-message {
+  color: #dc3545;
+  font-weight: bold;
+}
 </style>
