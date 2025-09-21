@@ -2,7 +2,17 @@
 export interface Game {
   id: number;
   createdAt: string;
-  participations: Participation[];
+  user_deck1: GameUserDeck;
+  user_deck2: GameUserDeck;
+  winner?: {
+    user: User;
+  };
+}
+
+export interface GameUserDeck {
+  id: number;
+  user: User;
+  deck: Deck;
 }
 
 export interface Participation {
@@ -28,7 +38,8 @@ export interface Rating {
 
 export interface User {
   id: number;
-  username: string;
+  name: string;
+  email: string;
 }
 
 export interface Deck {
@@ -68,7 +79,7 @@ export interface UpdateDeckRequest {
 }
 
 export interface CreateUserRequest {
-  username: string;
+  name: string;
   email: string;
   password: string;
 }

@@ -1,90 +1,65 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import TableComponent from './TableComponent.vue';
-import { fetchWrapper } from '@/composables/fetchWrapper';
+import { gameApi } from '@/composables/api';
+import type { Game } from '@/types';
+
+// Tabellenkonfiguration
+const tableTitle = ref('1 vs. 1');
+const tableHeaders = ref(['ID', 'Spieler 1', 'Deck', 'Spieler 2', 'Deck', 'Sieger']);
+const tableRows = ref<(string | number)[][]>([]);
+const errorMessage = ref('');
+
+// Daten laden
+const fetchTableData = async () => {
+  try {
+    const localUser = localStorage.getItem('user');
+    if (!localUser) return;
+
+    const userData = JSON.parse(localUser);
+    if (!userData?.id) return;
+
+    const games = await gameApi.getByUser(userData.id);
+
+    tableRows.value = games.map((game: Game) => [
+      game.id,
+      game.user_deck1.user.name,
+      game.user_deck1.deck.commander,
+      game.user_deck2.user.name,
+      game.user_deck2.deck.commander,
+      game.winner?.user.name || '-'
+    ]);
+  } catch (error) {
+    console.error('Fehler beim Laden der Spieledaten:', error);
+    errorMessage.value = 'Fehler beim Laden der Tabellendaten';
+    tableRows.value = [];
+  }
+};
+
+// Komponente initialisieren
+onMounted(() => {
+  fetchTableData();
+});
 </script>
 
 <template>
-  <TableComponent :title="tableTitle" :headers="tableHeaders" :rows="tableRows" :rowsPerPage="3" :userColumns="[0]" />
+  <div>
+    <TableComponent
+      :title="tableTitle"
+      :headers="tableHeaders"
+      :rows="tableRows"
+      :rowsPerPage="3"
+      :userColumns="[0]"
+    />
+    <div v-if="errorMessage" class="alert alert-danger mt-3">
+      {{ errorMessage }}
+    </div>
+  </div>
 </template>
 
-<script lang="ts">
-export default {
-  components: {
-    TableComponent
-  },
-  data() {
-    return {
-      tableTitle: '1 vs. 1',
-      tableHeaders: ['ID', 'Spieler 1', 'Deck', 'Spieler 2', 'Deck', 'Sieger'],
-      tableRows: [],
-      user: {
-        id: null,
-        name: ''
-      },
-      errorMessage: ''
-    };
-  },
-  methods: {
-    async fetchTableData() {
-      try {
-        const localUser = localStorage.getItem('user');
-        if (!localUser) return;
-        this.user = JSON.parse(localUser);
-
-        const data = await fetchWrapper(`/game/${this.user.id}`);
-
-        this.tableRows = data.map(
-          (Spiel: {
-            id: number;
-            user_deck1: {
-              id: number;
-              user: {
-                id: number;
-                name: string;
-              };
-              deck: {
-                id: number;
-                owner: string;
-                commander: string;
-              };
-            };
-            user_deck2: {
-              id: number;
-              user: {
-                id: number;
-                name: string;
-              };
-              deck: {
-                id: number;
-                owner: string;
-                commander: string;
-              };
-            };
-            winner: {
-              user: {
-                id: number;
-                name: string;
-              }
-            }
-          }) => [
-              Spiel.id,
-              Spiel.user_deck1.user,
-              Spiel.user_deck1.deck,
-              Spiel.user_deck2.user,
-              Spiel.user_deck2.deck,
-              Spiel.winner
-            ]
-        );
-      } catch {
-        this.errorMessage='Fehler beim Laden der Tabellendaten'
-        this.tableRows = [];
-      }
-
-    }
-  },
-  created() {
-    this.fetchTableData();
-  },
-};
-
-</script>
+<style scoped>
+.alert {
+  font-size: 0.9rem;
+  text-align: center;
+}
+</style>

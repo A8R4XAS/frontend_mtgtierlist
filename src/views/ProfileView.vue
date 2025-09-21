@@ -41,7 +41,7 @@ const fetchUser = async () => {
       id: userData.id,
       email: userData.email,
       password: '',
-      name: apiUser.username
+      name: apiUser.name
     };
     await fetchDecks(userData.id);
   } catch (error) {

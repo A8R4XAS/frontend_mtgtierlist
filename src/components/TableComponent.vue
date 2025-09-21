@@ -54,135 +54,136 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from 'vue';
 
+// Typen
 type TableRow = (string | number)[];
 type TableRows = TableRow[];
+type SortOrder = 'asc' | 'desc';
 
-export default {
-  props: {
-    title: {
-      type: String,
-      required: false
-    },
-    headers: {
-      type: Array,
-      required: true
-    },
-    rows: {
-      type: Array as () => TableRows,
-      required: true
-    },
-    rowsPerPage: {
-      type: Number,
-      default: 10
-    },
-    userColumn: {
-      type: Boolean,
-      default: false
-    },
-    userColumns: {
-      type: Array as () => number[],
-      required: true
-    },
-    activeDelete: {
-      type: Boolean,
-      default: false
-    },
-    activeUpdate: {
-      type: Boolean,
-      default: false
-    },
-    fontSize: {
-      type: String,
-      default: '18px'
-    }
-  },
-  data() {
-    return {
-      filter: '',
-      userFilter: false,
-      filteredRows: [] as TableRows,
-      sortColumn: null as number | null,
-      sortOrder: 'asc' as 'asc' | 'desc',
-      currentPage: 1,
-      userId: null as number | null,
-    };
-  },
-  created() {
-    const localUser = localStorage.getItem('user') || '';
-    if (!localUser) return;
-    this.userId = JSON.parse(localUser).id;
-    this.applyFilter();
-  },
-  watch: {
-    rows: {
-      handler(newRows: TableRows) {
-        this.filteredRows = newRows;
-        this.applyFilter();
-      },
-      deep: true
-    }
-  },
-  methods: {
-    applyFilter() {
+// Props
+interface Props {
+  title?: string;
+  headers: string[];
+  rows: TableRows;
+  rowsPerPage?: number;
+  userColumn?: boolean;
+  userColumns: number[];
+  activeDelete?: boolean;
+  activeUpdate?: boolean;
+  fontSize?: string;
+}
 
-      const filterLowerCase = this.filter.toLowerCase();
+const props = withDefaults(defineProps<Props>(), {
+  title: undefined,
+  rowsPerPage: 10,
+  userColumn: false,
+  activeDelete: false,
+  activeUpdate: false,
+  fontSize: '18px'
+});
 
-      this.filteredRows = this.rows.filter((row: TableRow) => {
-        const matchesFilter = row.some((cell: string | number) => cell.toString().toLowerCase().includes(filterLowerCase));
-        const matchesUser = !this.userFilter || this.userColumns.some(index => row[index] === this.userId);
-        return matchesFilter && matchesUser;
-      });
+// Emits
+const emit = defineEmits<{
+  (e: 'delete-row', id: number): void;
+  (e: 'update-row', id: number): void;
+}>();
 
-      this.sortRows();
-      this.currentPage = 1; // Back to First Page after filtered
+// Reaktive Zustände
+const filter = ref('');
+const userFilter = ref(false);
+const filteredRows = ref<TableRows>([]);
+const sortColumn = ref<number | null>(null);
+const sortOrder = ref<SortOrder>('asc');
+const currentPage = ref(1);
+const userId = ref<number | null>(null);
 
-    },
-    sortRows() {
-      if (this.sortColumn !== null) {
-        this.filteredRows.sort((a, b) => {
-          const aValue = a[this.sortColumn as number];
-          const bValue = b[this.sortColumn as number];
-          if (aValue === undefined || bValue === undefined) return 0;
-          if (aValue < bValue) return this.sortOrder === 'asc' ? -1 : 1;
-          if (aValue > bValue) return this.sortOrder === 'asc' ? 1 : -1;
-          return 0;
-        });
-      }
-    },
-    toggleSort(columnIndex: number) {
-      if (this.sortColumn === columnIndex) {
-        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-      } else {
-        this.sortColumn = columnIndex;
-        this.sortOrder = 'asc';
-      }
-      this.sortRows();
-    },
-    nextPage() {
-      if (this.currentPage * this.rowsPerPage < this.filteredRows.length) {
-        this.currentPage++;
-      }
-    },
-    prevPage() {
-      if (this.currentPage > 1) this.currentPage--;
-    },
-    deleteRow(id: number) {
-      this.$emit('delete-row', id); // Event auslösen, um die Zeile zu löschen
-    },
-    updateRow(id: number) {
-      this.$emit('update-row', id); // Event auslösen, um Zeile zu bearbeiten
-    }
-  },
-  computed: {
-    paginatedRows() {
-      const start = (this.currentPage - 1) * this.rowsPerPage;
-      const end = start + this.rowsPerPage;
-      return this.filteredRows.slice(start, end);
-    }
+// Benutzer laden
+onMounted(() => {
+  const localUser = localStorage.getItem('user');
+  if (localUser) {
+    userId.value = JSON.parse(localUser).id;
+    applyFilter();
+  }
+});
+
+// Filter anwenden
+const applyFilter = () => {
+  const filterLowerCase = filter.value.toLowerCase();
+
+  filteredRows.value = props.rows.filter((row: TableRow) => {
+    const matchesFilter = row.some((cell) =>
+      cell.toString().toLowerCase().includes(filterLowerCase)
+    );
+    const matchesUser = !userFilter.value || props.userColumns.some(index =>
+      row[index] === userId.value
+    );
+    return matchesFilter && matchesUser;
+  });
+
+  sortRows();
+  currentPage.value = 1;
+};
+
+// Sortierung
+const sortRows = () => {
+  if (sortColumn.value !== null) {
+    filteredRows.value.sort((a, b) => {
+      const aValue = a[sortColumn.value!];
+      const bValue = b[sortColumn.value!];
+
+      if (aValue === undefined || bValue === undefined) return 0;
+
+      const comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      return sortOrder.value === 'asc' ? comparison : -comparison;
+    });
   }
 };
+
+const toggleSort = (columnIndex: number) => {
+  if (sortColumn.value === columnIndex) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortColumn.value = columnIndex;
+    sortOrder.value = 'asc';
+  }
+  sortRows();
+};
+
+// Paginierung
+const paginatedRows = computed(() => {
+  const start = (currentPage.value - 1) * props.rowsPerPage;
+  const end = start + props.rowsPerPage;
+  return filteredRows.value.slice(start, end);
+});
+
+const nextPage = () => {
+  if (currentPage.value * props.rowsPerPage < filteredRows.value.length) {
+    currentPage.value++;
+  }
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
+};
+
+// Zeilen-Aktionen
+const deleteRow = (id: number) => {
+  emit('delete-row', id);
+};
+
+const updateRow = (id: number) => {
+  emit('update-row', id);
+};
+
+// Watch für Änderungen in den Zeilen
+watch(() => props.rows, (newRows) => {
+  filteredRows.value = newRows;
+  applyFilter();
+}, { deep: true });
 </script>
 
 <style scoped>

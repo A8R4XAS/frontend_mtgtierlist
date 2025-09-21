@@ -28,5 +28,4 @@ import TheDeckTable from '@/components/TheDeckTable.vue';
 
 <script lang="ts">
 
-export default {}
 </script>

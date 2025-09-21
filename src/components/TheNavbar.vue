@@ -2,8 +2,9 @@
 import TheGameForm from '@/components/TheGameForm.vue';
 import TheDeckForm from '@/components/TheDeckForm.vue';
 import { useAuth } from '@/composables/useAuth';
-import { ref } from 'vue';
-import { fetchWrapper } from '@/composables/fetchWrapper';
+import { onMounted, ref } from 'vue';
+import type { User } from '@/types';
+import { userApi } from '@/composables/api';
 
 const { loggedIn, logout } = useAuth();
 
@@ -14,6 +15,38 @@ const closeGamePopup = () => { showGamePopup.value = false; };
 const showDeckPopup = ref(false);
 const openDeckPopup = () => { showDeckPopup.value = true; };
 const closeDeckPopup = () => { showDeckPopup.value = false; };
+
+
+// Benutzerdaten
+const user = ref<Partial<User>>({
+  name: '',
+  email: ''
+});
+
+// Benutzer laden
+const fetchUser = async () => {
+  try {
+    const localUser = localStorage.getItem('user');
+    if (!localUser) return;
+
+    const userData = JSON.parse(localUser);
+    if (!userData?.id) return;
+
+    const apiUser = await userApi.get(userData.id);
+    if (apiUser) {
+      user.value = apiUser;
+    }
+  } catch (error) {
+    console.error('Fehler beim Laden der Benutzerdaten:', error);
+  }
+};
+
+// Komponente initialisieren
+onMounted(() => {
+  if (loggedIn.value) {
+    fetchUser();
+  }
+});
 </script>
 
 <template>
@@ -72,36 +105,6 @@ const closeDeckPopup = () => { showDeckPopup.value = false; };
     </div>
   </div>
 </template>
-
-<script lang="ts">
-export default {
-  data() {
-    return {
-      user: {
-        id: null,
-        email: '',
-        password: '',
-        name: ''
-      },
-    };
-  },
-  methods: {
-    async fetchUser() {
-      try {
-        const localUser = localStorage.getItem('user');
-        if (!localUser) return;
-        this.user = JSON.parse(localUser);
-        this.user = await fetchWrapper(`/user/${this.user.id}`);
-      } catch (error) {
-        console.error('Fehler beim Laden der Benutzerdaten: ', error)
-      }
-    },
-  },
-  created() {
-    this.fetchUser();
-  }
-};
-</script>
 
 <style scoped>
 .ul {

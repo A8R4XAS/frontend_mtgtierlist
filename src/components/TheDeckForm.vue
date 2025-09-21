@@ -1,3 +1,107 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { deckApi, userApi } from '@/composables/api';
+import type { User } from '@/types';
+
+// Formularfelder
+const commander = ref('');
+const thema = ref('');
+const gameplan = ref('');
+const tempo = ref('');
+const tier = ref('');
+const weakness = ref('');
+
+// Status und Feedback
+const saveSuccess = ref(false);
+const errorMessage = ref('');
+const user = ref<User | null>(null);
+
+// Konstanten
+const tempi = [
+    "Turn 0",
+    "AGGRO",
+    "Aggro to Midgame",
+    "MID-GAME",
+    "Midgame to Lategame",
+    "LATE-GAME",
+    "Wo WinCon?"
+];
+
+// Hilfsfunktionen
+const isBold = (elem: string) => {
+    const boldElements = ["AGGRO", "MID-GAME", "LATE-GAME"];
+    return boldElements.includes(elem);
+};
+
+const isSmall = (elem: string) => {
+    const smallElements = ["Turn 0", "Aggro to Midgame", "Midgame to Lategame", "Wo WinCon?"];
+    return smallElements.includes(elem);
+};
+
+// Benutzerdaten laden
+const fetchUser = async () => {
+    try {
+        const storedUser = localStorage.getItem('user');
+        if (!storedUser) {
+            errorMessage.value = 'Bitte melden Sie sich an, um ein Deck zu erstellen.';
+            return;
+        }
+
+        const userData = JSON.parse(storedUser);
+        user.value = await userApi.get(userData.id);
+    } catch (error) {
+        console.error('Fehler beim Laden der Benutzerdaten:', error);
+        errorMessage.value = 'Fehler beim Laden der Benutzerdaten';
+    }
+};
+
+// Deck speichern
+const submitDeck = async () => {
+    try {
+        if (!user.value?.id) {
+            errorMessage.value = 'Bitte melden Sie sich an, um ein Deck zu erstellen.';
+            return;
+        }
+
+        await deckApi.create({
+            owner: user.value.id,
+            commander: commander.value,
+            thema: thema.value,
+            gameplan: gameplan.value,
+            tempo: tempo.value,
+            tier: Number(tier.value) || 0,
+            weaknesses: weakness.value
+        });
+
+        // Erfolgsmeldung anzeigen
+        saveSuccess.value = true;
+        errorMessage.value = '';
+
+        // Formular zurücksetzen
+        commander.value = '';
+        thema.value = '';
+        gameplan.value = '';
+        tempo.value = '';
+        tier.value = '';
+        weakness.value = '';
+
+        // Erfolgsmeldung ausblenden
+        setTimeout(() => {
+            saveSuccess.value = false;
+        }, 3000);
+    } catch (error) {
+        console.error('Fehler beim Speichern des Decks:', error);
+        errorMessage.value = 'Fehler beim Speichern des Decks';
+        saveSuccess.value = false;
+    }
+};
+
+// Komponente initialisieren
+onMounted(() => {
+    fetchUser();
+});
+</script>
+
 <template>
     <div class="triple-border">
         <div class="game-form">
@@ -6,107 +110,41 @@
                 <div class="container">
                     <div class="item">
                         <label for="commander">Commander: </label>
-                        <input type="text" v-model="commander" required />
+                        <input id="commander" type="text" v-model="commander" required />
                     </div>
                     <div class="item">
                         <label for="gameplan">Gameplan: </label>
-                        <input type="text" v-model="gameplan" required />
+                        <input id="gameplan" type="text" v-model="gameplan" required />
                     </div>
                     <div class="item">
                         <label for="thema">Thema: </label>
-                        <input type="text" v-model="thema" required />
+                        <input id="thema" type="text" v-model="thema" required />
                     </div>
                     <div class="item">
                         <label for="tempo">Tempo: </label>
-                        <select v-model="tempo" required>
-                            <option v-for="elem in tempi" :key="elem" :value="elem" :class="{
-                                bold: isBold(elem),
-                                small: isSmall(elem)
-                            }">
-                                {{ elem }}</option>
+                        <select id="tempo" v-model="tempo" required>
+                            <option v-for="elem in tempi" :key="elem" :value="elem"
+                                :class="{ bold: isBold(elem), small: isSmall(elem) }">
+                                {{ elem }}
+                            </option>
                         </select>
                     </div>
                     <div class="item">
                         <label for="tier">Tier: </label>
-                        <input type="text" v-model="tier" placeholder="is ne 7"/>
+                        <input id="tier" type="text" v-model="tier" placeholder="is ne 7"/>
                     </div>
                     <div class="item">
                         <label for="weakness">Weakness: </label>
-                        <input type="text" v-model="weakness" />
+                        <input id="weakness" type="text" v-model="weakness" />
                     </div>
                 </div>
-                <button class="item">Deck erfassen</button>
-                <div class="success-message" v-if="saveSuccess">Daten erfolgreich gespeichert!</div>
+                <button type="submit" class="item" :disabled="!user?.id">Deck erfassen</button>
+                <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+                <div v-if="saveSuccess" class="success-message">Daten erfolgreich gespeichert!</div>
             </form>
         </div>
     </div>
 </template>
-
-<script lang="ts">
-import { fetchWrapper } from '@/composables/fetchWrapper';
-
-export default {
-    data() {
-        return {
-            commander: "",
-            thema: "",
-            gameplan: "",
-            tempo: "",
-            tier: "",
-            weakness: "",
-            tempi: ["Turn 0", "AGGRO", "Aggro to Midgame", "MID-GAME", "Midgame to Lategame", "LATE-GAME", "Wo WinCon?"],
-            user: {
-                id: null,
-                email: '',
-                name: ''
-            },
-            saveSuccess: false
-        };
-    },
-    methods: {
-        async submitDeck() {
-            try {
-                await fetchWrapper(`/deck/${this.user.id}`, {
-                    owner: this.user.id,
-                    commander: this.commander,
-                    thema: this.thema,
-                    gameplan: this.gameplan,
-                    tempo: this.tempo,
-                    tier: this.tier,
-                    weakness: this.weakness
-                }, 'POST');
-                this.saveSuccess = true;
-                setTimeout(() => { this.saveSuccess = false }, 3000);
-            } catch (error) {
-                console.error('Error post Game', error)
-            }
-        },
-        async fetchUser() {
-            try {
-                const localUser = localStorage.getItem('user');
-                if (!localUser) return;
-                this.user = JSON.parse(localUser);
-                this.user = await fetchWrapper(`/user/${this.user.id}`);
-            } catch (error) {
-                console.error('Fehler beim Laden der Benutzerdaten: ', error)
-            }
-        },
-        isBold(elem: string) {
-            // Definiere hier die Elemente, die fettgedruckt sein sollen
-            const boldElements = ["AGGRO", "MID-GAME", "LATE-GAME"];
-            return boldElements.includes(elem);
-        },
-        isSmall(elem: string) {
-            // Definiere hier die Elemente, die fettgedruckt sein sollen
-            const smallElements = ["Turn 0", "Aggro to Midgame", "Midgame to Lategame", "Wo WinCon?"];
-            return smallElements.includes(elem);
-        },
-    },
-    created() {
-        this.fetchUser();
-    }
-};
-</script>
 
 <style scoped>
 .item {

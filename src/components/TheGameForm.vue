@@ -155,7 +155,7 @@ const fetchPlayers = async () => {
     try {
         const data = await userApi.getAll();
         player_data.value = data;
-        player_name.value = data.map((player: User) => player.username);
+        player_name.value = data.map((player: User) => player.name);
     } catch (error) {
         console.error('Error fetching players:', error);
     }
@@ -182,7 +182,7 @@ const fetchDecks = async () => {
  * @returns Die ID des Spielers oder 0 falls nicht gefunden
  */
 const getPlayerIdByName = (playerName: string): number => {
-    const player = player_data.value.find((p: User) => p.username === playerName);
+    const player = player_data.value.find((p: User) => p.name === playerName);
     return player ? player.id : 0;
 };
 

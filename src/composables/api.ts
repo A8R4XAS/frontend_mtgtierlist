@@ -42,6 +42,11 @@ export const gameApi = {
   // Spiel löschen
   delete: async (id: number): Promise<void> => {
     return fetchWrapper(`/game/${id}`, undefined, 'DELETE');
+  },
+
+  // Spiele eines Benutzers abrufen
+  getByUser: async (userId: number): Promise<Game[]> => {
+    return fetchWrapper(`/game/user/${userId}`);
   }
 };
 
