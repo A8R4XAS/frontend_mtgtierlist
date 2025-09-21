@@ -78,6 +78,15 @@ onMounted(() => {
             <li class="nav-item">
               <RouterLink class="nav-link" to="/decks">Decks</RouterLink>
             </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" to="/deck-browser">Deck Browser</RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" to="/statistics">Statistiken</RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" to="/ratings">Bewertungen</RouterLink>
+            </li>
             <li class="nav-item" v-if="!loggedIn">
               <RouterLink class="nav-link" to="/login">Login</RouterLink>
             </li>
