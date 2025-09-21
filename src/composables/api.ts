@@ -13,6 +13,7 @@ import type {
   CreateDeckRequest,
   UpdateDeckRequest,
   CreateUserRequest,
+  UpdateUserRequest,
   LoginRequest,
   CreateUserDeckRequest
 } from '../types';
@@ -169,6 +170,11 @@ export const userApi = {
   // Benutzer ausloggen
   logout: async (): Promise<void> => {
     return fetchWrapper('/auth/logout', undefined, 'POST');
+  },
+
+  // Benutzer aktualisieren
+  update: async (id: number, data: UpdateUserRequest): Promise<User> => {
+    return fetchWrapper(`/user/${id}`, data, 'PUT');
   },
 
   // Benutzer löschen

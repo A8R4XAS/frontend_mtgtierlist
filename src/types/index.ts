@@ -73,6 +73,11 @@ export interface CreateUserRequest {
   password: string;
 }
 
+export interface UpdateUserRequest {
+  username?: string;
+  email?: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
