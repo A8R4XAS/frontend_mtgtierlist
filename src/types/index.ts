@@ -36,10 +36,16 @@ export interface Rating {
   value: number;
 }
 
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin'
+}
+
 export interface User {
   id: number;
   name: string;
   email: string;
+  role: UserRole;
 }
 
 export interface Deck {

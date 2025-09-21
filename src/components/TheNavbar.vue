@@ -4,9 +4,21 @@ import TheDeckForm from '@/components/TheDeckForm.vue';
 import { useAuth } from '@/composables/useAuth';
 import { onMounted, ref } from 'vue';
 import type { User } from '@/types';
+import { UserRole } from '@/types';
 import { userApi } from '@/composables/api';
+import { useAdmin } from '@/composables/useAdmin';
 
 const { loggedIn, logout } = useAuth();
+
+// Benutzerdaten
+const currentUser = ref<Partial<User>>({
+  name: '',
+  email: '',
+  role: UserRole.USER
+});
+
+// Admin-Check aus dem Composable
+const { isAdmin } = useAdmin();
 
 const showGamePopup = ref(false);
 const openGamePopup = () => { showGamePopup.value = true; };
@@ -15,13 +27,6 @@ const closeGamePopup = () => { showGamePopup.value = false; };
 const showDeckPopup = ref(false);
 const openDeckPopup = () => { showDeckPopup.value = true; };
 const closeDeckPopup = () => { showDeckPopup.value = false; };
-
-
-// Benutzerdaten
-const user = ref<Partial<User>>({
-  name: '',
-  email: ''
-});
 
 // Benutzer laden
 const fetchUser = async () => {
@@ -34,7 +39,7 @@ const fetchUser = async () => {
 
     const apiUser = await userApi.get(userData.id);
     if (apiUser) {
-      user.value = apiUser;
+      currentUser.value = apiUser;
     }
   } catch (error) {
     console.error('Fehler beim Laden der Benutzerdaten:', error);
@@ -53,7 +58,7 @@ onMounted(() => {
   <div class="triple-border">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
-        <a class="navbar-brand">{{ user.name }}</a>
+        <a class="navbar-brand">{{ currentUser.name }}</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
           aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -72,7 +77,7 @@ onMounted(() => {
             <li class="nav-item">
               <RouterLink class="nav-link" to="/profile">Profil</RouterLink>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" v-if="isAdmin">
               <RouterLink class="nav-link" to="/player">Spieler</RouterLink>
             </li>
             <li class="nav-item">

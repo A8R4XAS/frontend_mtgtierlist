@@ -19,6 +19,19 @@ import type {
 } from '../types';
 import { fetchWrapper } from './fetchWrapper';
 
+// Auth API
+export const authApi = {
+  validateRole: async () => {
+    try {
+      const response = await fetchWrapper('/auth/validate-role');
+      return response.role;
+    } catch (error) {
+      console.error('Error validating role:', error);
+      return null;
+    }
+  }
+};
+
 /**
  * Game API
  * Verwaltet Spieleinträge im System

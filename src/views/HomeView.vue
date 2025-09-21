@@ -1,35 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
 import The1vs1Table from '@/components/The1vs1Table.vue';
 import TheNavbar from '@/components/TheNavbar.vue';
-import TableComponent from '@/components/TableComponent.vue';
-import { userApi } from '@/composables/api';
-import type { User } from '@/types';
+import TheUserTable from '@/components/TheUserTable.vue';
+import { useAdmin } from '@/composables/useAdmin';
 
-// Tabellen-Konfiguration
-const tableTitle = ref('Benutzerliste');
-const tableHeaders = ref(['Name', 'Email']);
-const tableRows = ref<string[][]>([]);
-const errorMessage = ref('');
-
-// Benutzerdaten laden
-const fetchTableData = async () => {
-  try {
-    const users = await userApi.getAll();
-    tableRows.value = users.map((user: User) => [
-      user.name || '',
-      user.email || ''
-    ]);
-  } catch (error) {
-    console.error('Fehler beim Laden der Benutzer:', error);
-    errorMessage.value = 'Fehler beim Laden der Usertabelle';
-  }
-};
-
-// Komponente initialisieren
-onMounted(() => {
-  fetchTableData();
-});
+const { isAdmin } = useAdmin();
 </script>
 
 <template>
@@ -47,20 +22,9 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="row justify-content-center mb-3 g-1">
+      <div v-if="isAdmin" class="row justify-content-center mb-3 g-1">
         <div class="col-12">
-          <TableComponent
-            :title="tableTitle"
-            :headers="tableHeaders"
-            :rows="tableRows"
-            :rowsPerPage="10"
-            :userColumn="false"
-            :userColumns="[0]"
-            :activeDelete="false"
-            :activeUpdate="false"
-            :font-size="'14px'"
-          />
-          <div v-if="errorMessage" class="error-message mt-3">{{ errorMessage }}</div>
+          <TheUserTable />
         </div>
       </div>
     </div>
