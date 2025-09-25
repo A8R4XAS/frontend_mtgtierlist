@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ResponsiveContainer from '@/components/ResponsiveContainer.vue';
 import The1vs1Table from '@/components/The1vs1Table.vue';
 import TheNavbar from '@/components/TheNavbar.vue';
 import TheUserTable from '@/components/TheUserTable.vue';
@@ -19,6 +20,20 @@ const { isAdmin } = useAdmin();
       <div class="row">
         <div class="col-12">
           <The1vs1Table />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <ResponsiveContainer
+            title="Beispiel Magic Karte"
+            :manaCost="['3', 'red', 'blue']"
+            artworkUrl="/path/to/artwork.jpg"
+            cardType="Kreatur — Drache"
+            cardText="<b>Flugfähigkeit</b><br>Wenn diese Karte ins Spiel kommt..."
+            :power="4"
+            :toughness="4"
+          />
         </div>
       </div>
 
