@@ -1,61 +1,62 @@
 <script setup lang="ts">
-import { fetchWrapper } from '@/composables/fetchWrapper';
+import { ref, onMounted } from 'vue';
 import TableComponent from './TableComponent.vue';
+import { deckApi } from '@/composables/api';
+import type { Deck } from '@/types';
+
+// Tabellenkonfiguration
+const tableTitle = ref('Deckliste');
+const tableHeaders = ref(['ID', 'Besitzer', 'Commander', 'Thema', 'Gameplan', 'Tempo', 'Tier', 'Schwäche']);
+const tableRows = ref<(string | number)[][]>([]);
+const errorMessage = ref('');
+
+// Daten laden
+const fetchTableData = async () => {
+  try {
+    const decks = await deckApi.getAll();
+
+    tableRows.value = decks.map((deck: Deck) => [
+      deck.id,
+      deck.owner?.name || '-',
+      deck.commander,
+      deck.thema || '-',
+      deck.gameplan || '-',
+      deck.tempo || '-',
+      deck.tier || '-',
+      deck.weaknesses || '-'
+    ]);
+  } catch (error) {
+    console.error('Fehler beim Laden der Decks:', error);
+    errorMessage.value = 'Fehler beim Laden der Deckliste';
+    tableRows.value = [];
+  }
+};
+
+// Komponente initialisieren
+onMounted(() => {
+  fetchTableData();
+});
 </script>
 
 <template>
-  <TableComponent :title="tableTitle" :headers="tableHeaders" :rows="tableRows" :rowsPerPage="5" :userColumns="[0]" :fontSize="'14px'"/>
+  <div>
+    <TableComponent
+      :title="tableTitle"
+      :headers="tableHeaders"
+      :rows="tableRows"
+      :rowsPerPage="5"
+      :userColumns="[0]"
+      :fontSize="'14px'"
+    />
+    <div v-if="errorMessage" class="alert alert-danger mt-3">
+      {{ errorMessage }}
+    </div>
+  </div>
 </template>
 
-<script lang="ts">
-export default {
-  components: {
-    TableComponent
-  },
-  data() {
-    return {
-      tableTitle: 'Deckliste',
-      tableHeaders: ['ID', 'Besitzer', 'Commander', 'Thema', 'Gameplan', 'Tempo', 'Tier', 'Schwäche'],
-      tableRows: []
-    };
-  },
-  methods: {
-    async fetchTableData() {
-      try {
-
-        const data = await fetchWrapper('/deck/');
-
-        this.tableRows = data.map(
-          (Deck: {
-            id: number;
-            owner: {
-              id: number;
-              name: string;
-            };
-            commander: string;
-            thema: string;
-            gameplan: string;
-            tempo: string;
-            tier: number;
-            weakness: string;
-          }) => [
-              Deck.id,
-              Deck.owner.name,
-              Deck.commander,
-              Deck.thema,
-              Deck.gameplan,
-              Deck.tempo,
-              Deck.tier,
-              Deck.weakness,
-            ]);
-      } catch (error) {
-        console.error('Fehler beim Laden der Userdaten: ', error)
-      }
-    }
-  },
-  created() {
-    this.fetchTableData();
-  },
-};
-
-</script>
+<style scoped>
+.alert {
+  font-size: 0.9rem;
+  text-align: center;
+}
+</style>

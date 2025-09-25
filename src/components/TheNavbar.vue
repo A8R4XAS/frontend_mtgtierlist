@@ -2,10 +2,23 @@
 import TheGameForm from '@/components/TheGameForm.vue';
 import TheDeckForm from '@/components/TheDeckForm.vue';
 import { useAuth } from '@/composables/useAuth';
-import { ref } from 'vue';
-import { fetchWrapper } from '@/composables/fetchWrapper';
+import { onMounted, ref } from 'vue';
+import type { User } from '@/types';
+import { UserRole } from '@/types';
+import { userApi } from '@/composables/api';
+import { useAdmin } from '@/composables/useAdmin';
 
 const { loggedIn, logout } = useAuth();
+
+// Benutzerdaten
+const currentUser = ref<Partial<User>>({
+  name: '',
+  email: '',
+  role: UserRole.USER
+});
+
+// Admin-Check aus dem Composable
+const { isAdmin } = useAdmin();
 
 const showGamePopup = ref(false);
 const openGamePopup = () => { showGamePopup.value = true; };
@@ -14,13 +27,38 @@ const closeGamePopup = () => { showGamePopup.value = false; };
 const showDeckPopup = ref(false);
 const openDeckPopup = () => { showDeckPopup.value = true; };
 const closeDeckPopup = () => { showDeckPopup.value = false; };
+
+// Benutzer laden
+const fetchUser = async () => {
+  try {
+    const localUser = localStorage.getItem('user');
+    if (!localUser) return;
+
+    const userData = JSON.parse(localUser);
+    if (!userData?.id) return;
+
+    const apiUser = await userApi.get(userData.id);
+    if (apiUser) {
+      currentUser.value = apiUser;
+    }
+  } catch (error) {
+    console.error('Fehler beim Laden der Benutzerdaten:', error);
+  }
+};
+
+// Komponente initialisieren
+onMounted(() => {
+  if (loggedIn.value) {
+    fetchUser();
+  }
+});
 </script>
 
 <template>
   <div class="triple-border">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
       <div class="container-fluid">
-        <a class="navbar-brand">{{ user.name }}</a>
+        <a class="navbar-brand">{{ currentUser.name }}</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
           aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -39,11 +77,20 @@ const closeDeckPopup = () => { showDeckPopup.value = false; };
             <li class="nav-item">
               <RouterLink class="nav-link" to="/profile">Profil</RouterLink>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" v-if="isAdmin">
               <RouterLink class="nav-link" to="/player">Spieler</RouterLink>
             </li>
             <li class="nav-item">
               <RouterLink class="nav-link" to="/decks">Decks</RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" to="/deck-browser">Deck Browser</RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" to="/statistics">Statistiken</RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink class="nav-link" to="/ratings">Bewertungen</RouterLink>
             </li>
             <li class="nav-item" v-if="!loggedIn">
               <RouterLink class="nav-link" to="/login">Login</RouterLink>
@@ -72,36 +119,6 @@ const closeDeckPopup = () => { showDeckPopup.value = false; };
     </div>
   </div>
 </template>
-
-<script lang="ts">
-export default {
-  data() {
-    return {
-      user: {
-        id: null,
-        email: '',
-        password: '',
-        name: ''
-      },
-    };
-  },
-  methods: {
-    async fetchUser() {
-      try {
-        const localUser = localStorage.getItem('user');
-        if (!localUser) return;
-        this.user = JSON.parse(localUser);
-        this.user = await fetchWrapper(`/user/${this.user.id}`);
-      } catch (error) {
-        console.error('Fehler beim Laden der Benutzerdaten: ', error)
-      }
-    },
-  },
-  created() {
-    this.fetchUser();
-  }
-};
-</script>
 
 <style scoped>
 .ul {

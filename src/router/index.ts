@@ -36,12 +36,30 @@ const router = createRouter({
       path: '/player',
       name: 'player',
       component: PlayerView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
       path: '/decks',
       name: 'decks',
       component: DeckView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/statistics',
+      name: 'statistics',
+      component: () => import('../views/StatisticsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/deck-browser',
+      name: 'deck-browser',
+      component: () => import('../views/DeckBrowserView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/ratings',
+      name: 'ratings',
+      component: () => import('../views/RatingsView.vue'),
       meta: { requiresAuth: true }
     },
     {
@@ -58,12 +76,24 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const loggedIn = localStorage.getItem('user')
-  if (to.matched.some(record => record.meta.requiresAuth) && !loggedIn) {
-    next('/login')
-  } else {
-    next()
+  const userStr = localStorage.getItem('user');
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
+
+  if (!userStr && requiresAuth) {
+    next('/login');
+    return;
   }
+
+  if (requiresAdmin) {
+    const user = userStr ? JSON.parse(userStr) : null;
+    if (!user || user.role !== 'admin') {
+      next('/'); // Redirect nicht-Admin User zur Startseite
+      return;
+    }
+  }
+
+  next();
 })
 
 export default router

@@ -4,18 +4,18 @@
 <template>
   <!--
   <header>
-     <img alt="Mtg logo" class="logo" src="@/assets/mtg color.svg" width="243" height="180" /> 
+     <img alt="Mtg logo" class="logo" src="@/assets/mtg color.svg" width="243" height="180" />
   </header>
 -->
 
   <main>
     <div class="container-fluid">
       <div class="row justify-content-center">
-        <div class="col-2"></div>
-        <div class="col-8">
+        <div class="col-0"></div>
+        <div class="col-12">
           <RouterView /> <!-- Diese Zeile stellt sicher, dass die 404-Seite angezeigt wird -->
         </div>
-        <div class="col-2"></div>
+        <div class="col-0"></div>
       </div>
     </div>
   </main>
