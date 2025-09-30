@@ -148,11 +148,16 @@ onMounted(() => {
 
 .popup-content {
   background-color: #978B73;
-  padding: 1px;
+  padding: 20px;
   border-radius: 5px;
   position: relative;
   box-shadow: 0 4px 25px #978B73;
   z-index: 1001; /* Höherer z-index für den Popup-Inhalt */
+  width: 90vw; /* 90% der Viewport-Breite */
+  max-width: 1200px; /* Maximale Breite für große Bildschirme */
+  min-width: 600px; /* Mindestbreite für kleine Bildschirme */
+  max-height: 90vh; /* 90% der Viewport-Höhe */
+  overflow-y: auto; /* Scrollbar bei Bedarf */
 }
 
 
@@ -175,5 +180,24 @@ onMounted(() => {
 .btn-close-circle::before {
   font-size: 20px;
   color: #000;
+}
+
+/* Responsive Design für kleinere Bildschirme */
+@media (max-width: 768px) {
+  .popup-content {
+    width: 95vw;
+    min-width: 320px;
+    padding: 15px;
+    margin: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .popup-content {
+    width: 98vw;
+    min-width: 300px;
+    padding: 10px;
+    margin: 5px;
+  }
 }
 </style>

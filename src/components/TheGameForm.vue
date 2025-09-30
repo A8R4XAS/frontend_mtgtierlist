@@ -616,10 +616,10 @@ defineExpose({
 
 <style scoped>
 .game-form {
-    font-size: 25px;
+    font-size: 22px;
     color: #2c3e50;
     text-align: center;
-    padding: 12px;
+    padding: 9px;
     background: url(../assets/background_textfeld.jpg) no-repeat center center fixed, var(--color-background);
     background-size: cover;
     background-color: var(--color-background);
