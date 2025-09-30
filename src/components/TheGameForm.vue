@@ -41,7 +41,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="row" v-if="isVisible">
+                            <div class="row" v-if="showPlayer3">
                                 <div class="col-md-6 mb-3">
                                     <label for="player3">Spieler 3</label>
                                     <select v-model="player3_name" class="form-select">
@@ -59,7 +59,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="row" v-if="isVisible">
+                            <div class="row" v-if="showPlayer4">
                                 <div class="col-md-6 mb-3">
                                     <label for="player4">Spieler 4</label>
                                     <select v-model="player4_name" class="form-select">
@@ -79,12 +79,60 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <button type="button" class="btn btn-primary" @click="toggleVisibility">
-                                        {{ isVisible ? '-' : '+' }}
+                                    <!-- Plus-Button für Spieler 3 -->
+                                    <button
+                                        v-if="areRequiredPlayersFilled && !showPlayer3"
+                                        type="button"
+                                        class="btn btn-primary"
+                                        @click="addPlayer3"
+                                        title="Spieler 3 hinzufügen"
+                                    >
+                                        + Spieler 3
+                                    </button>
+
+                                    <!-- Minus-Button für Spieler 3 -->
+                                    <button
+                                        v-if="showPlayer3 && !isPlayer3Filled"
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        @click="removePlayer3"
+                                        title="Spieler 3 entfernen"
+                                    >
+                                        - Spieler 3
+                                    </button>
+
+                                    <!-- Plus-Button für Spieler 4 -->
+                                    <button
+                                        v-if="isPlayer3Filled && !showPlayer4"
+                                        type="button"
+                                        class="btn btn-primary"
+                                        @click="addPlayer4"
+                                        title="Spieler 4 hinzufügen"
+                                    >
+                                        + Spieler 4
+                                    </button>
+
+                                    <!-- Minus-Button für Spieler 4 -->
+                                    <button
+                                        v-if="showPlayer4"
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        @click="removePlayer4"
+                                        title="Spieler 4 entfernen"
+                                    >
+                                        - Spieler 4
                                     </button>
                                 </div>
                                 <div class="col-md-6">
-                                    <button type="submit" class="btn btn-success">Spiel erfassen</button>
+                                    <button
+                                        type="submit"
+                                        class="btn"
+                                        :class="hasMinimumPlayers ? 'btn-success' : 'btn-secondary'"
+                                        :disabled="!hasMinimumPlayers"
+                                        :title="hasMinimumPlayers ? 'Spiel erfassen' : 'Mindestens 2 Spieler benötigt'"
+                                    >
+                                        Spiel erfassen
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -132,17 +180,163 @@ const deck3 = ref(""); // Deck Spieler 3 (optional)
 const player4_name = ref(""); // Name Spieler 4 (optional)
 const deck4 = ref(""); // Deck Spieler 4 (optional)
 
-// Steuert die Sichtbarkeit der optionalen Spieler 3 und 4
-const isVisible = ref(false);
+// Steuert die Sichtbarkeit der optionalen Spieler schrittweise
+const showPlayer3 = ref(false);
+const showPlayer4 = ref(false);
+
+// Computed Properties
+
+/**
+ * Prüft ob Spieler 1 und 2 vollständig ausgefüllt sind
+ * Voraussetzung für die Anzeige des ersten Plus-Buttons
+ */
+const areRequiredPlayersFilled = computed(() => {
+    return (player1_name.value && deck1.value) && (player2_name.value && deck2.value);
+});
+
+/**
+ * Prüft ob Spieler 3 vollständig ausgefüllt ist
+ * Voraussetzung für die Anzeige des zweiten Plus-Buttons
+ */
+const isPlayer3Filled = computed(() => {
+    return player3_name.value && deck3.value;
+});
+
+/**
+ * Prüft ob mindestens 2 Spieler vollständig ausgefüllt sind
+ * Ein Spieler gilt als vollständig, wenn sowohl Name als auch Deck ausgewählt sind
+ */
+const hasMinimumPlayers = computed(() => {
+    let completePlayersCount = 0;
+
+    // Spieler 1 prüfen
+    if (player1_name.value && deck1.value) {
+        completePlayersCount++;
+    }
+
+    // Spieler 2 prüfen
+    if (player2_name.value && deck2.value) {
+        completePlayersCount++;
+    }
+
+    // Spieler 3 prüfen (optional)
+    if (player3_name.value && deck3.value) {
+        completePlayersCount++;
+    }
+
+    // Spieler 4 prüfen (optional)
+    if (player4_name.value && deck4.value) {
+        completePlayersCount++;
+    }
+
+    return completePlayersCount >= 2;
+});
 
 // Methoden für die Komponentenlogik
 
 /**
- * Schaltet die Sichtbarkeit der optionalen Spielerfelder (3 & 4) um
- * Wird durch den "+/-" Button gesteuert
+ * Reorganisiert alle Spieler ohne Lücken
+ * Sammelt alle ausgefüllten Spieler und ordnet sie neu von Position 1-4 zu
  */
-const toggleVisibility = () => {
-    isVisible.value = !isVisible.value;
+const reorganizePlayers = () => {
+    // Sammle alle ausgefüllten Spieler-Daten
+    const players = [];
+
+    if (player1_name.value && deck1.value) {
+        players.push({ name: player1_name.value, deck: deck1.value });
+    }
+    if (player2_name.value && deck2.value) {
+        players.push({ name: player2_name.value, deck: deck2.value });
+    }
+    if (player3_name.value && deck3.value) {
+        players.push({ name: player3_name.value, deck: deck3.value });
+    }
+    if (player4_name.value && deck4.value) {
+        players.push({ name: player4_name.value, deck: deck4.value });
+    }
+
+    // Alle Felder zurücksetzen
+    player1_name.value = '';
+    deck1.value = '';
+    player2_name.value = '';
+    deck2.value = '';
+    player3_name.value = '';
+    deck3.value = '';
+    player4_name.value = '';
+    deck4.value = '';
+
+    // Spieler lückenlos neu zuweisen
+    players.forEach((player, index) => {
+        if (index === 0) {
+            player1_name.value = player.name;
+            deck1.value = player.deck;
+        } else if (index === 1) {
+            player2_name.value = player.name;
+            deck2.value = player.deck;
+        } else if (index === 2) {
+            player3_name.value = player.name;
+            deck3.value = player.deck;
+        } else if (index === 3) {
+            player4_name.value = player.name;
+            deck4.value = player.deck;
+        }
+    });
+
+    // Sichtbarkeit basierend auf Anzahl der Spieler anpassen
+    showPlayer3.value = players.length >= 3;
+    showPlayer4.value = players.length >= 4;
+};
+
+/**
+ * Entfernt Spieler 1 und lässt andere nachrücken
+ */
+const removePlayer1 = () => {
+    player1_name.value = '';
+    deck1.value = '';
+    reorganizePlayers();
+};
+
+/**
+ * Entfernt Spieler 2 und lässt andere nachrücken
+ */
+const removePlayer2 = () => {
+    player2_name.value = '';
+    deck2.value = '';
+    reorganizePlayers();
+};
+
+/**
+ * Zeigt Spieler 3 an
+ */
+const addPlayer3 = () => {
+    showPlayer3.value = true;
+};
+
+/**
+ * Entfernt Spieler 3 und lässt andere nachrücken
+ */
+const removePlayer3 = () => {
+    player3_name.value = '';
+    deck3.value = '';
+    reorganizePlayers();
+};
+
+/**
+ * Zeigt Spieler 4 an (nur wenn Spieler 3 komplett ist)
+ */
+const addPlayer4 = () => {
+    if (isPlayer3Filled.value) {
+        showPlayer4.value = true;
+    }
+};
+
+/**
+ * Entfernt Spieler 4 und lässt andere nachrücken
+ */
+const removePlayer4 = () => {
+    player4_name.value = '';
+    deck4.value = '';
+    reorganizePlayers();
 };
 
 /**
@@ -253,7 +447,8 @@ const resetForm = () => {
     deck4.value = "";
 
     // Zusätzliche Spielerfelder ausblenden
-    isVisible.value = false;
+    showPlayer3.value = false;
+    showPlayer4.value = false;
 };
 
 /**
@@ -380,12 +575,43 @@ const emit = defineEmits<{
 }>();
 
 /**
+ * Löscht die Auswahl eines bestimmten Spielers und lässt andere nachrücken
+ * @param position - Position des zu löschenden Spielers (1-4)
+ */
+const clearPlayerByPosition = (position: number) => {
+    switch (position) {
+        case 1:
+            removePlayer1();
+            break;
+        case 2:
+            removePlayer2();
+            break;
+        case 3:
+            removePlayer3();
+            break;
+        case 4:
+            removePlayer4();
+            break;
+    }
+};
+
+/**
  * Watcher für Änderungen in der Spielerauswahl
  * Emittiert ein Event wenn sich die Spieler-Deck-Kombination ändert
  */
 watch(currentPlayers, (newPlayers) => {
     emit('players-changed', newPlayers);
 }, { deep: true });
+
+// Exportiere Methoden für Elternkomponenten
+defineExpose({
+    clearPlayerByPosition,
+    removePlayer1,
+    removePlayer2,
+    removePlayer3,
+    removePlayer4,
+    reorganizePlayers
+});
 </script>
 
 <style scoped>
@@ -413,5 +639,21 @@ watch(currentPlayers, (newPlayers) => {
     padding: 0.5rem;
     border: 1px solid #aaa;
     border-radius: 8px;
+}
+
+/* Button Styling */
+.game-form button {
+    transition: all 0.3s ease;
+}
+
+.game-form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.game-form button:disabled:hover {
+    opacity: 0.6;
+    transform: none !important;
 }
 </style>
