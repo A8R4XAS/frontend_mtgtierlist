@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import ResponsiveContainer from '@/components/ResponsiveContainer.vue';
 import The1vs1Table from '@/components/The1vs1Table.vue';
-import GamePlayerDisplay from '@/components/GamePlayerDisplay.vue';
+import GamePlayerDisplay from '@/components/GameCardDisplay.vue';
 import TheNavbar from '@/components/TheNavbar.vue';
 import TheUserTable from '@/components/TheUserTable.vue';
 import { useAdmin } from '@/composables/useAdmin';
