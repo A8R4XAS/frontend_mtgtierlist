@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import ResponsiveContainer from '@/components/ResponsiveContainer.vue';
 import The1vs1Table from '@/components/The1vs1Table.vue';
 import GamePlayerDisplay from '@/components/GameCardDisplay.vue';
+import PlayerHistoryDisplay from '@/components/PlayerHistoryDisplay.vue';
 import TheNavbar from '@/components/TheNavbar.vue';
 import TheUserTable from '@/components/TheUserTable.vue';
 import { useAdmin } from '@/composables/useAdmin';
@@ -16,6 +16,16 @@ const handleGameCreated = (gameId: number) => {
 // Handler für Spieleränderungen (optional)
 const handlePlayersChanged = (players: Array<{player: string, deck: string, position: number}>) => {
   console.log('Spieler geändert:', players);
+};
+
+// Handler für ausgewähltes Spiel aus der Historie
+const handleGameSelected = (game: {id: number; created_at: string; deck: string; result: string | null; totalPlayers: number}) => {
+  console.log('Spiel aus Historie ausgewählt:', game);
+};
+
+// Handler für Spieleränderung in der Historie
+const handlePlayerChanged = (playerId: number | string) => {
+  console.log('Spieler in Historie geändert:', playerId);
 };
 </script>
 
@@ -37,14 +47,9 @@ const handlePlayersChanged = (players: Array<{player: string, deck: string, posi
         </div>
 
         <div class="col-6">
-          <ResponsiveContainer
-            title="Beispiel Magic Karte"
-            :manaCost="['3', 'red', 'blue']"
-            artworkUrl="/path/to/artwork.jpg"
-            cardType="Kreatur — Drache"
-            cardText="<b>Flugfähigkeit</b><br>Wenn diese Karte ins Spiel kommt..."
-            :power="4"
-            :toughness="4"
+          <PlayerHistoryDisplay
+            @game-selected="handleGameSelected"
+            @player-changed="handlePlayerChanged"
           />
         </div>
       </div>
