@@ -3,7 +3,6 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12 game-form">
-                    <h2>Neues Spiel erfassen</h2>
                     <form @submit.prevent="submitGame">
                         <div class="container-fluid">
                             <div class="row">
@@ -110,7 +109,7 @@
  * 4. Das Formular wird zurückgesetzt für die nächste Eingabe
  */
 
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { gameApi, participationApi, userApi, deckApi } from '@/composables/api';
 import type { CreateParticipationRequest, User, Deck } from '@/types';
 
@@ -326,12 +325,67 @@ onMounted(() => {
 });
 
 /**
+ * Computed property für die aktuell ausgewählten Spielerdaten
+ * Gibt ein Array mit den Spieler-Deck-Kombinationen zurück
+ */
+const currentPlayers = computed(() => {
+    const players = [];
+
+    // Spieler 1 (immer erforderlich)
+    if (player1_name.value && deck1.value) {
+        players.push({
+            player: player1_name.value,
+            deck: deck1.value,
+            position: 1
+        });
+    }
+
+    // Spieler 2 (immer erforderlich)
+    if (player2_name.value && deck2.value) {
+        players.push({
+            player: player2_name.value,
+            deck: deck2.value,
+            position: 2
+        });
+    }
+
+    // Spieler 3 (optional)
+    if (player3_name.value && deck3.value) {
+        players.push({
+            player: player3_name.value,
+            deck: deck3.value,
+            position: 3
+        });
+    }
+
+    // Spieler 4 (optional)
+    if (player4_name.value && deck4.value) {
+        players.push({
+            player: player4_name.value,
+            deck: deck4.value,
+            position: 4
+        });
+    }
+
+    return players;
+});
+
+/**
  * Event-Definition für die Kommunikation mit der Elternkomponente
- * Sendet die ID des neu erstellten Spiels nach erfolgreichem Speichern
+ * Sendet die ID des neu erstellten Spiels und Änderungen der Spielerauswahl
  */
 const emit = defineEmits<{
-    (e: 'game-created', gameId: number): void
+    (e: 'game-created', gameId: number): void;
+    (e: 'players-changed', players: Array<{player: string, deck: string, position: number}>): void;
 }>();
+
+/**
+ * Watcher für Änderungen in der Spielerauswahl
+ * Emittiert ein Event wenn sich die Spieler-Deck-Kombination ändert
+ */
+watch(currentPlayers, (newPlayers) => {
+    emit('players-changed', newPlayers);
+}, { deep: true });
 </script>
 
 <style scoped>
