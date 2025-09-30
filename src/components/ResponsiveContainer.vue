@@ -38,29 +38,6 @@
           <div v-if="showArtwork" class="artwork-section">
             <div class="artwork-container">
               <img v-if="artworkUrl" :src="artworkUrl" :alt="title" class="artwork-image" />
-              <div v-else-if="showPlayerInfo && players && players.length > 0" class="player-info-display">
-                <!-- Spielerinformationen anzeigen -->
-                <div class="players-grid">
-                  <div
-                    v-for="playerData in players"
-                    :key="playerData.position"
-                    class="player-card"
-                    :class="`player-${playerData.position}`"
-                  >
-                    <div class="player-row">
-                      <div class="player-info">
-                        <i class="fas fa-user player-icon"></i>
-                        <span class="player-name">{{ playerData.player }}</span>
-                      </div>
-                      <div class="deck-separator">-</div>
-                      <div class="deck-info">
-                        <i class="fas fa-magic deck-icon"></i>
-                        <span class="deck-name">{{ playerData.deck }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
               <div v-else class="artwork-placeholder">
                 <!-- Fallback Content oder Slot für Artwork -->
                 <slot name="artwork">
@@ -125,7 +102,6 @@ interface Props {
   // Artwork Section
   artworkUrl?: string;
   showArtwork?: boolean;
-  showPlayerInfo?: boolean;
 
   // Type Line
   cardType?: string;
@@ -137,9 +113,6 @@ interface Props {
   // Creature Stats
   power?: number | null;
   toughness?: number | null;
-
-  // Player Data
-  players?: Array<{player: string, deck: string, position: number}>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -152,13 +125,11 @@ const props = withDefaults(defineProps<Props>(), {
   showMagicHeader: true,
   artworkUrl: '',
   showArtwork: true,
-  showPlayerInfo: false,
   cardType: '',
   showTypeContent: false,
   cardText: '',
   power: null,
-  toughness: null,
-  players: () => []
+  toughness: null
 });
 
 const containerClasses = computed(() => [
@@ -287,7 +258,7 @@ const getManaIcon = (manaType: string): string => {
   background: #2c2c2c;
   border-radius: 0px;
   overflow: hidden;
-  min-height: 280px;
+  height: 280px;
 
   /* Goldener Rahmen um Artwork mit schwarzem Rand nur links/rechts */
   border: 2px solid rgb(218, 198, 25);
@@ -310,9 +281,10 @@ const getManaIcon = (manaType: string): string => {
 .artwork-container {
   width: 100%;
   height: 100%;
+  min-height: 280px;
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
 }
 
@@ -331,7 +303,8 @@ const getManaIcon = (manaType: string): string => {
   color: #999;
   background: linear-gradient(135deg, #3c3c3c 0%, #2c2c2c 100%);
   width: 100%;
-  height: 180px;
+  height: 100%;
+  min-height: 280px;
 }
 
 .placeholder-icon {
@@ -345,121 +318,7 @@ const getManaIcon = (manaType: string): string => {
   opacity: 0.7;
 }
 
-/* SPIELERINFORMATIONEN IM ARTWORK-BEREICH */
-.player-info-display {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  padding: 6px;
-  background:
-    linear-gradient(135deg,
-      rgba(140, 120, 90, 0.2) 0%,
-      rgba(180, 160, 120, 0.15) 50%,
-      rgba(140, 120, 90, 0.2) 100%
-    );
-}
 
-.players-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-  height: 100%;
-  justify-content: space-between;
-  align-items: stretch;
-  padding: 10px;
-}
-
-.player-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 12px;
-  width: 100%;
-  flex: 1;
-  background:
-    linear-gradient(135deg,
-      rgba(212, 168, 85, 0.25) 0%,     /* Helles Gold transparent */
-      rgba(184, 148, 31, 0.2) 50%,     /* Warmes Gold transparent */
-      rgba(125, 104, 21, 0.25) 100%    /* Dunkles Gold transparent */
-    );
-  border: 1px solid rgba(218, 198, 25, 0.5);
-  border-radius: 8px;
-  box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition: all 0.2s ease;
-  min-height: 5px;
-}
-
-.player-card:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 3px 6px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.player-row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  width: 100%;
-  align-items: center;
-  gap: 8px;
-}
-
-.player-info {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  justify-content: flex-start;
-}.player-icon {
-  color: #d4a855;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-}
-
-.player-name {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #313131;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.4);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.deck-separator {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #7d6815;
-  text-align: center;
-  flex-shrink: 0;
-  justify-self: center;
-}
-
-.deck-info {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  justify-content: flex-end;
-}
-
-.deck-icon {
-  color: #9a7e1a;
-  font-size: 0.8rem;
-  flex-shrink: 0;
-}
-
-.deck-name {
-  font-size: 1rem;
-  color: #cfa81c;
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 /* 3. TYPE LINE - Kartentyp-Zeile im inneren Rahmen */
 .type-line {
