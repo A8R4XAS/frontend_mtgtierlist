@@ -195,15 +195,14 @@ const getManaIcon = (manaType: string): string => {
     2px 0 0 0 #000000,                         /* Rechter schwarzer Rand */
     0 -2px 0 0 #000000,                        /* Oberer schwarzer Rand */
     inset 0 1px 0 rgba(255, 255, 255, 0.6),   /* Oberer Glanz */
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1),        /* Unterer Schatten */
     /* OPTIMALER 3D-ABSTEH-EFFEKT - Perfekte Balance */
     0 8px 16px rgba(0, 0, 0, 0.4),            /* Mittlerer tiefer Schatten */
     0 4px 8px rgba(0, 0, 0, 0.5),             /* Sichtbarer Schatten */
-    0 2px 4px rgba(0, 0, 0, 0.6),             /* Deutlicher Kontakt-Schatten */
-    0 1px 2px rgba(0, 0, 0, 0.7);             /* Scharfer Kontakt-Schatten */
+    0 0px 1px rgba(0, 0, 0, 0.6),             /* Deutlicher Kontakt-Schatten */
+    0 1px 0px rgba(0, 0, 0, 0.7);             /* Scharfer Kontakt-Schatten */
 
   /* Optimaler physischer Abstand */
-  margin: 4px 3px -2px 3px;
+  margin: 4px 3px 1px 3px;
   position: relative;
 
   /* Subtiles Kupfer-Gold Header Background - dunkel außen, hell mittig */
@@ -255,22 +254,28 @@ const getManaIcon = (manaType: string): string => {
   margin: 0px 8px 0px 8px;
 
   position: relative;
-  z-index: 10;
+  z-index: 9;
   background: #2c2c2c;
   border-radius: 0px;
   overflow: hidden;
-  min-height: 180px;
+  min-height: 280px;
 
   /* Goldener Rahmen um Artwork mit schwarzem Rand nur links/rechts */
   border: 2px solid rgb(218, 198, 25);
   border-radius: 0px;
 
-  /* Schwarzer Rand nur links und rechts */
+  /* Schwarzer Rand + 2px Schatten um die gesamte Artbox */
   box-shadow:
     -2px 0 0 0 #000000,                        /* Linker schwarzer Rand */
     2px 0 0 0 #000000,                         /* Rechter schwarzer Rand */
+    0 0 0 2px rgba(0, 0, 0, 0.6),             /* 2px breiter Schatten um die gesamte Artbox */
     inset 0 2px 4px rgba(0, 0, 0, 0.3),
-    0 3px 6px rgba(0, 0, 0, 0.2);              /* Äußerer Schatten */
+    0 3px 6px rgba(0, 0, 0, 0.2),              /* Äußerer Schatten */
+    /* Partielle Schatten oben und unten nur an den Seiten */
+    -8px -2px 8px -6px rgba(0, 0, 0, 0.4),    /* Oberer linker Schatten */
+    8px -2px 8px -6px rgba(0, 0, 0, 0.4),     /* Oberer rechter Schatten */
+    -8px 2px 8px -6px rgba(0, 0, 0, 0.4),     /* Unterer linker Schatten */
+    8px 2px 8px -6px rgba(0, 0, 0, 0.4);      /* Unterer rechter Schatten */
 }
 
 .artwork-container {
@@ -316,7 +321,7 @@ const getManaIcon = (manaType: string): string => {
 
   position: relative;
   z-index: 10;
-  padding: 8px 12px;
+  padding: 9px 12px;
 
   /* Subtiles Kupfer-Gold Type-Line Background - dunkel außen, hell mittig */
   background:
@@ -364,10 +369,12 @@ const getManaIcon = (manaType: string): string => {
   margin: 1px 8px 0px 8px;
 
   position: relative;
-  z-index: 10;
+  z-index: 9;
   flex: 1;
   display: flex;
   flex-direction: column;
+
+  min-height: 260px;
 }
 
 .textbox-inner {
@@ -385,14 +392,18 @@ const getManaIcon = (manaType: string): string => {
   border: 2px solid rgb(218, 198, 25);
   border-radius: 0px;
 
-  /* Schwarzer Rand nur unten, links und rechts */
+  /* Schwarzer Rand + 2px Schatten um die gesamte Artbox */
   box-shadow:
     -2px 0 0 0 #000000,                        /* Linker schwarzer Rand */
     2px 0 0 0 #000000,                         /* Rechter schwarzer Rand */
-    0 2px 0 0 #000000,                         /* Unterer schwarzer Rand */
-    inset 1px 1px 3px rgba(0, 0, 0, 0.05),
-    inset -1px -1px 3px rgba(255, 255, 255, 0.8),
-    0 3px 6px rgba(0, 0, 0, 0.2);             /* Äußerer Schatten */
+    0 0 0 2px rgba(0, 0, 0, 0.6),             /* 2px breiter Schatten um die gesamte Artbox */
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 3px 6px rgba(0, 0, 0, 0.2),              /* Äußerer Schatten */
+    /* Partielle Schatten oben und unten nur an den Seiten */
+    -8px -2px 8px -6px rgba(0, 0, 0, 0.4),    /* Oberer linker Schatten */
+    8px -2px 8px -6px rgba(0, 0, 0, 0.4),     /* Oberer rechter Schatten */
+    -8px 2px 8px -6px rgba(0, 0, 0, 0.4),     /* Unterer linker Schatten */
+    8px 2px 8px -6px rgba(0, 0, 0, 0.4);      /* Unterer rechter Schatten */
 
   min-height: 80px;
   position: relative;
@@ -569,6 +580,12 @@ const getManaIcon = (manaType: string): string => {
   padding: 0;
   border-radius: 12px;
   position: relative;
+
+  /* Maximale Breite für authentische Magic-Karten-Proportionen */
+  max-width: 500px;
+  min-height: 700px;
+  aspect-ratio: 5/7; /* Authentisches Kartenverhältnis 5:7 */
+  margin: 0 auto;  /* Zentriert den Container horizontal */
 
   /* Authentischer schwarzer Magic-Karten-Rand */
   border: 12px solid #000000;
