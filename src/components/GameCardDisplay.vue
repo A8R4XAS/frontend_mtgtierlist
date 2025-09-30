@@ -37,8 +37,11 @@
         </div>
         <div v-else class="no-players-placeholder">
           <div class="placeholder-content">
-            <i class="fas fa-users placeholder-icon"></i>
-            <span>Keine Spieler ausgewählt</span>
+            <img
+              src="@/assets/images/emptyTable.png"
+              alt="Leerer Tisch - Keine Spieler ausgewählt"
+              class="empty-table-image"
+            />
           </div>
         </div>
       </template>
@@ -265,6 +268,16 @@ const handlePlayersChangedForward = (players: Array<{player: string, deck: strin
 .placeholder-content span {
   font-size: 1.1rem;
   opacity: 0.7;
+}
+
+.empty-table-image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.8;
+  border-radius: 8px;
 }
 
 .game-form-container {
