@@ -29,21 +29,13 @@ const handlePlayersChanged = (players: Array<{player: string, deck: string, posi
       </div>
 
       <div class="row">
-        <div class="col-12">
-          <The1vs1Table />
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-12">
+        <div class="col-6">
           <GamePlayerDisplay
             @game-created="handleGameCreated"
             @players-changed="handlePlayersChanged"
           />
         </div>
-      </div>
 
-      <div class="row mt-3">
         <div class="col-6">
           <ResponsiveContainer
             title="Beispiel Magic Karte"
@@ -55,13 +47,11 @@ const handlePlayersChanged = (players: Array<{player: string, deck: string, posi
             :toughness="4"
           />
         </div>
-        <div class="col-6">
-          <ResponsiveContainer
-            title="Weitere Magic Karte"
-            :manaCost="['2', 'white']"
-            cardType="Verzauberung"
-            cardText="<b>Beispieltext:</b><br>Dies ist eine weitere Magic-Karte zur Demonstration."
-          />
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <The1vs1Table />
         </div>
       </div>
 
