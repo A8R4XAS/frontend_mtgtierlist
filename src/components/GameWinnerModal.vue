@@ -1,6 +1,10 @@
 <!--
   GameWinnerModal.vue - Modal für die Gewinner-Auswahl und Bewertung von Spielen
-  Diese Komponente ermöglicht es, den Gewinner eines Spiels zu bestimmen und andere Spieler zu bewerten
+  Diese Komponente ermöglicht es, den Gewinner eines Spiels zu bestimmen und andere // State Management
+const selectedWinners = ref<number[]>([]);
+const submitting = ref(false);
+const participantRatings = ref<Record<number, number>>({});
+const existingRatings = ref<Array<Rating>>();r zu bewerten
 -->
 <template>
   <div v-if="isVisible" class="winner-modal" @click.self="closeModal">
@@ -16,54 +20,124 @@
       </div>
 
       <div class="modal-body">
-        <div class="winner-selection-section">
-          <h4 class="section-title">
-            <i class="fas fa-crown"></i>
-            Gewinner auswählen
-          </h4>
-          <div class="form-group">
-            <label for="winner-select" class="form-label">Wer hat das Spiel gewonnen?</label>
-            <select
-              id="winner-select"
-              class="form-select winner-select"
-              v-model="selectedWinner"
-            >
-              <option value="">Gewinner auswählen...</option>
-              <option
-                v-for="participant in participants"
-                :key="participant.id"
-                :value="participant.id"
-              >
-                {{ participant.user_deck.user.name }} - {{ participant.user_deck.deck.commander || 'Unbekanntes Deck' }}
-              </option>
-            </select>
+        <!-- Info Box -->
+        <div class="info-box">
+          <i class="fas fa-info-circle"></i>
+          <p>Bewerte dich selbst und alle anderen Teilnehmer des Spiels. Wähle optional den/die Gewinner aus.</p>
+        </div>
+
+        <!-- Selbstbewertung Section -->
+        <div v-if="currentUserParticipant" class="self-rating-section">
+          <h5>
+            <i class="fas fa-user-check"></i>
+            Deine Leistung bewerten
+          </h5>
+          <p class="rating-description">
+            Bewerte ehrlich deine eigene Spielweise und Leistung in diesem Spiel.
+          </p>
+
+          <div class="self-rating-card">
+            <div class="rating-player-info">
+              <div class="rating-player-header">
+                <div class="player-details">
+                  <div class="rating-player-name">
+                    <i class="fas fa-user"></i>
+                    {{ currentUserParticipant.user_deck.user.name }} (Du)
+                  </div>
+                  <div class="rating-deck-name">
+                    <i class="fas fa-magic"></i>
+                    {{ currentUserParticipant.user_deck.deck.commander || 'Unbekanntes Deck' }}
+                  </div>
+                </div>
+                <div class="winner-toggle">
+                  <label class="winner-checkbox">
+                    <input
+                      type="checkbox"
+                      :value="currentUserParticipant.id"
+                      v-model="selectedWinners"
+                    />
+                    <span class="checkmark"></span>
+                    <span class="winner-label">
+                      <i class="fas fa-trophy"></i>
+                      Gewinner
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="rating-input-container">
+              <label class="rating-label">Selbstbewertung (1-10)</label>
+              <div class="rating-input-wrapper">
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  v-model="participantRatings[currentUserParticipant.id]"
+                  class="rating-slider"
+                  @input="updateRating(currentUserParticipant.id, $event)"
+                />
+                <div class="rating-display">
+                  <span class="rating-value">{{ participantRatings[currentUserParticipant.id] || 5 }}</span>
+                  <span class="rating-max">/10</span>
+                </div>
+              </div>
+              <div class="rating-stars">
+                <span
+                  v-for="star in 10"
+                  :key="star"
+                  class="star"
+                  :class="{ filled: star <= (participantRatings[currentUserParticipant.id] || 5) }"
+                >
+                  ★
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Rating Section - nur anzeigen wenn Gewinner ausgewählt -->
-        <div v-if="selectedWinner && opponentParticipants.length > 0" class="rating-section">
+        <!-- Rating Section für andere Spieler -->
+        <div v-if="allOtherParticipants.length > 0" class="rating-section">
           <h5>
-            <i class="fas fa-star"></i>
-            Gegner bewerten
+            <i class="fas fa-users"></i>
+            Andere Spieler bewerten
           </h5>
           <p class="rating-description">
-            Bewerte deine Gegner basierend auf ihrer Spielweise, Fairness und dem Spielspaß.
+            Bewerte alle anderen Teilnehmer basierend auf ihrer Spielweise, Fairness und dem Spielspaß.
           </p>
 
           <div class="rating-grid">
             <div
-              v-for="participant in opponentParticipants"
+              v-for="participant in allOtherParticipants"
               :key="participant.id"
               class="rating-card"
             >
               <div class="rating-player-info">
-                <div class="rating-player-name">
-                  <i class="fas fa-user"></i>
-                  {{ participant.user_deck.user.name }}
-                </div>
-                <div class="rating-deck-name">
-                  <i class="fas fa-magic"></i>
-                  {{ participant.user_deck.deck.commander || 'Unbekanntes Deck' }}
+                <div class="rating-player-header">
+                  <div class="player-details">
+                    <div class="rating-player-name">
+                      <i class="fas fa-user"></i>
+                      {{ participant.user_deck.user.name }}
+                    </div>
+                    <div class="rating-deck-name">
+                      <i class="fas fa-magic"></i>
+                      {{ participant.user_deck.deck.commander || 'Unbekanntes Deck' }}
+                    </div>
+                  </div>
+                  <div class="winner-toggle">
+                    <label class="winner-checkbox">
+                      <input
+                        type="checkbox"
+                        :value="participant.id"
+                        v-model="selectedWinners"
+                      />
+                      <span class="checkmark"></span>
+                      <span class="winner-label">
+                        <i class="fas fa-trophy"></i>
+                        Gewinner
+                      </span>
+                    </label>
+                  </div>
                 </div>
               </div>
 
@@ -97,19 +171,6 @@
             </div>
           </div>
 
-          <div class="rating-notes">
-            <label for="rating-notes" class="form-label">
-              <i class="fas fa-comment-alt"></i>
-              Zusätzliche Notizen (optional)
-            </label>
-            <textarea
-              id="rating-notes"
-              v-model="ratingNotes"
-              class="form-control"
-              rows="3"
-              placeholder="Teile deine Gedanken über das Spiel oder einzelne Spieler..."
-            ></textarea>
-          </div>
         </div>
 
         <div v-if="loadingParticipants" class="loading-participants">
@@ -128,29 +189,16 @@
             Abbrechen
           </button>
 
-          <div class="primary-actions">
-            <button
-              type="button"
-              class="btn btn-info"
-              :disabled="submitting"
-              @click="submitRatings"
-              v-if="hasRatingsToSubmit"
-            >
-              <i class="fas fa-star"></i>
-              Bewertungen speichern
-            </button>
-
-            <button
-              type="button"
-              class="btn btn-primary"
-              :disabled="!selectedWinner || submitting"
-              @click="submitWinnerAndRatings"
-            >
-              <i v-if="submitting" class="fas fa-spinner fa-spin"></i>
-              <i v-else class="fas fa-trophy"></i>
-              {{ submitting ? 'Wird gespeichert...' : 'Speichern & Schließen' }}
-            </button>
-          </div>
+          <button
+            type="button"
+            class="btn btn-primary"
+            :disabled="submitting || (!hasRatingsToSubmit && selectedWinners.length === 0)"
+            @click="submitAllData"
+          >
+            <i v-if="submitting" class="fas fa-spinner fa-spin"></i>
+            <i v-else class="fas fa-save"></i>
+            {{ submitting ? 'Wird gespeichert...' : 'Speichern' }}
+          </button>
         </div>
       </div>
     </div>
@@ -191,16 +239,13 @@ const props = withDefaults(defineProps<Props>(), {
 // Emits Definition
 const emit = defineEmits<{
   close: [];
-  winnerSelected: [winnerId: number];
-  ratingsSubmitted: [ratings: Record<number, number>, notes: string];
-  winnerAndRatingsSubmitted: [winnerId: number, ratings: Record<number, number>, notes: string];
+  dataSubmitted: [winners: number[], ratings: Record<number, number>];
 }>();
 
 // State Management
-const selectedWinner = ref<number | null>(null);
+const selectedWinners = ref<number[]>([]);
 const submitting = ref(false);
 const participantRatings = ref<Record<number, number>>({});
-const ratingNotes = ref('');
 const existingRatings = ref<Array<Rating>>([]);
 
 // Auth Composable
@@ -223,14 +268,21 @@ const getCurrentUser = () => {
 };
 
 // Computed Properties
-const opponentParticipants = computed(() => {
+const allOtherParticipants = computed(() => {
   if (!currentUser.value) return props.participants;
   return props.participants.filter(p => p.user_deck.user.id !== currentUser.value!.id);
+});
+
+const currentUserParticipant = computed(() => {
+  if (!currentUser.value) return null;
+  return props.participants.find(p => p.user_deck.user.id === currentUser.value!.id);
 });
 
 const hasRatingsToSubmit = computed(() => {
   return Object.keys(participantRatings.value).length > 0;
 });
+
+
 
 // Watchers
 watch(() => props.isVisible, (newValue) => {
@@ -256,16 +308,13 @@ const formatDate = (dateString: string): string => {
 };
 
 const initializeModal = () => {
-  selectedWinner.value = null;
+  selectedWinners.value = [];
   participantRatings.value = {};
-  ratingNotes.value = '';
   existingRatings.value = [];
 
-  // Finde den aktuellen Gewinner falls vorhanden
-  const currentWinner = props.participants.find(p => p.is_winner);
-  if (currentWinner) {
-    selectedWinner.value = currentWinner.id;
-  }
+  // Finde aktuelle Gewinner falls vorhanden
+  const currentWinners = props.participants.filter(p => p.is_winner);
+  selectedWinners.value = currentWinners.map(w => w.id);
 };
 
 const loadExistingRatings = async () => {
@@ -309,60 +358,59 @@ const closeModal = () => {
   emit('close');
 };
 
-const submitRatings = async () => {
-  if (!currentUser.value || !props.game || Object.keys(participantRatings.value).length === 0) {
-    return;
-  }
+const submitAllData = async () => {
+  if (!currentUser.value || !props.game) return;
 
   submitting.value = true;
   try {
-    // Speichere oder aktualisiere Bewertungen
-    for (const [participantIdStr, rating] of Object.entries(participantRatings.value)) {
-      const participantId = parseInt(participantIdStr);
-      const participant = props.participants.find(p => p.id === participantId);
+    // Setze Gewinner falls ausgewählt
+    if (selectedWinners.value.length > 0) {
+      // Setze jeden ausgewählten Gewinner
+      for (const winnerId of selectedWinners.value) {
+        await participationApi.setWinner(winnerId);
+      }
+    }
 
-      if (participant) {
-        const existingRating = existingRatings.value.find((r: Rating) =>
-          r.participation.id === participant.id
-        );
+    // Speichere Bewertungen falls vorhanden
+    if (Object.keys(participantRatings.value).length > 0) {
+      for (const [participantIdStr, rating] of Object.entries(participantRatings.value)) {
+        const participantId = parseInt(participantIdStr);
+        const participant = props.participants.find(p => p.id === participantId);
 
-        const ratingData: CreateRatingRequest = {
-          participation: participant.id,
-          rater: currentUser.value.id,
-          value: rating
-        };
+        if (participant && currentUser.value) {
+          const existingRating = existingRatings.value?.find((r: Rating) =>
+            r.participation.id === participant.id
+          );
 
-        if (existingRating) {
-          await ratingApi.update(existingRating.id, ratingData);
-        } else {
-          await ratingApi.create(ratingData);
+          // Überprüfe ob es sich um eine Selbstbewertung handelt
+          const isSelfRating = participant.user_deck.user.id === currentUser.value.id;
+
+          const ratingData: CreateRatingRequest = {
+            participation: participant.id,
+            rater: currentUser.value.id,
+            value: rating
+          };
+
+          try {
+            if (existingRating) {
+              await ratingApi.update(existingRating.id, ratingData);
+            } else {
+              await ratingApi.create(ratingData);
+            }
+
+            // Log für Debugging
+            if (isSelfRating) {
+              console.log(`Selbstbewertung gespeichert: ${rating}/10`);
+            }
+          } catch (error) {
+            console.error(`Fehler beim Speichern der ${isSelfRating ? 'Selbst' : ''}bewertung für ${participant.user_deck.user.name}:`, error);
+          }
         }
       }
     }
 
-    emit('ratingsSubmitted', participantRatings.value, ratingNotes.value);
-
-  } catch (error) {
-    console.error('Fehler beim Speichern der Bewertungen:', error);
-  } finally {
-    submitting.value = false;
-  }
-};
-
-const submitWinnerAndRatings = async () => {
-  if (!selectedWinner.value || !props.game) return;
-
-  submitting.value = true;
-  try {
-    // Erst den Gewinner setzen
-    await participationApi.setWinner(selectedWinner.value);
-
-    // Dann Bewertungen speichern falls vorhanden
-    if (Object.keys(participantRatings.value).length > 0) {
-      await submitRatings();
-    }
-
-    emit('winnerAndRatingsSubmitted', selectedWinner.value, participantRatings.value, ratingNotes.value);
+    emit('dataSubmitted', selectedWinners.value, participantRatings.value);
+    closeModal();
 
   } catch (error) {
     console.error('Fehler beim Speichern:', error);
@@ -447,6 +495,30 @@ onMounted(() => {
   padding: 20px;
 }
 
+/* Info Box Styles */
+.info-box {
+  background: rgba(52, 152, 219, 0.1);
+  border: 1px solid #3498db;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.info-box i {
+  color: #3498db;
+  font-size: 1.2rem;
+}
+
+.info-box p {
+  margin: 0;
+  color: #ecf0f1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 .winner-selection-section {
   margin-bottom: 25px;
 }
@@ -503,6 +575,38 @@ onMounted(() => {
   color: #3498db;
 }
 
+/* Self Rating Section Styles */
+.self-rating-section {
+  margin-top: 20px;
+  padding: 20px;
+  background: rgba(46, 125, 50, 0.1);
+  border: 1px solid #2e7d32;
+  border-radius: 10px;
+  margin-bottom: 25px;
+}
+
+.self-rating-section h5 {
+  color: #4caf50;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.self-rating-section .rating-description {
+  color: #a5d6a7;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  font-style: italic;
+}
+
+.self-rating-card {
+  background: rgba(46, 125, 50, 0.15);
+  border: 1px solid #388e3c;
+  border-radius: 8px;
+  padding: 15px;
+}
+
 /* Rating Section Styles */
 .rating-section {
   margin-top: 25px;
@@ -546,6 +650,78 @@ onMounted(() => {
 
 .rating-player-info {
   margin-bottom: 12px;
+}
+
+.rating-player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.player-details {
+  flex: 1;
+}
+
+.winner-toggle {
+  flex-shrink: 0;
+}
+
+.winner-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #ecf0f1;
+  transition: all 0.2s ease;
+}
+
+.winner-checkbox:hover {
+  color: #f39c12;
+}
+
+.winner-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.checkmark {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  background-color: rgba(52, 73, 94, 0.6);
+  border: 2px solid #34495e;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.winner-checkbox input[type="checkbox"]:checked + .checkmark {
+  background-color: #f39c12;
+  border-color: #f39c12;
+}
+
+.winner-checkbox input[type="checkbox"]:checked + .checkmark::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid #2c3e50;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.winner-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.winner-label i {
+  color: #f39c12;
+  font-size: 0.8rem;
 }
 
 .rating-player-name,
@@ -658,35 +834,7 @@ onMounted(() => {
   color: #f39c12;
 }
 
-.rating-notes {
-  margin-top: 15px;
-}
 
-.rating-notes .form-label {
-  color: #ecf0f1;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.rating-notes .form-control {
-  background-color: rgba(44, 62, 80, 0.6);
-  border: 2px solid #34495e;
-  border-radius: 6px;
-  color: #ecf0f1;
-  padding: 10px;
-  resize: vertical;
-  font-family: inherit;
-}
-
-.rating-notes .form-control:focus {
-  outline: none;
-  border-color: #3498db;
-  background-color: rgba(44, 62, 80, 0.8);
-}
-
-.rating-notes .form-control::placeholder {
-  color: #7f8c8d;
-}
 
 .modal-footer {
   display: flex;
