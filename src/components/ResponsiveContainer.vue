@@ -379,7 +379,7 @@ const getManaIcon = (manaType: string): string => {
   flex-direction: column;
 
   /* Begrenzte Höhe für Magic-Karten-Proportionen */
-  min-height: 160px;
+  min-height: 260px;
   max-height: 260px;
 }
 
@@ -418,7 +418,6 @@ const getManaIcon = (manaType: string): string => {
 
   /* Automatisches Scrolling - begrenzt auf verfügbaren Platz */
   overflow-y: auto;
-  max-height: 260px;  /* Kleinere max-height um in die Karte zu passen */
   min-height: 80px;
 }
 
