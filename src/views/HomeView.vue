@@ -22,11 +22,6 @@ const handlePlayersChanged = (players: Array<{player: string, deck: string, posi
 const handleGameSelected = (game: {id: number; created_at: string; deck: string; result: string | null; totalPlayers: number}) => {
   console.log('Spiel aus Historie ausgewählt:', game);
 };
-
-// Handler für Spieleränderung in der Historie
-const handlePlayerChanged = (playerId: number | string) => {
-  console.log('Spieler in Historie geändert:', playerId);
-};
 </script>
 
 <template>
@@ -49,7 +44,6 @@ const handlePlayerChanged = (playerId: number | string) => {
         <div class="col-6">
           <PlayerHistoryDisplay
             @game-selected="handleGameSelected"
-            @player-changed="handlePlayerChanged"
           />
         </div>
       </div>
