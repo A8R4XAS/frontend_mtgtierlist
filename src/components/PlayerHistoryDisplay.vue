@@ -9,8 +9,50 @@
       :manaCost="['white', 'blue', 'black', 'red', 'green']"
       cardType="Enchantment — Historie"
     >
-      <!-- Spiele-Historie im Artwork-Bereich -->
+      <!-- Spieler-Statistiken im Artwork-Bereich -->
       <template #artwork>
+        <div class="player-selection-container">
+          <div v-if="currentUser && recentGames.length > 0" class="statistics-summary">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <i class="fas fa-gamepad stat-icon"></i>
+                  <div class="stat-info">
+                    <span class="stat-number">{{ recentGames.length }}</span>
+                    <span class="stat-label">Spiele</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <i class="fas fa-trophy stat-icon"></i>
+                  <div class="stat-info">
+                    <span class="stat-number">{{ winCount }}</span>
+                    <span class="stat-label">Siege</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="stat-card">
+                  <i class="fas fa-chart-line stat-icon"></i>
+                  <div class="stat-info">
+                    <span class="stat-number">{{ winRate }}%</span>
+                    <span class="stat-label">Siegrate</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="loading" class="loading-history">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Lade Spielerhistorie...</span>
+          </div>
+        </div>
+      </template>
+
+      <!-- Spiele-Historie im Textbereich -->
+      <template #textbox>
         <div v-if="recentGames.length > 0" class="games-history-display">
           <div class="games-grid">
             <div
@@ -35,9 +77,21 @@
                   <i class="fas fa-magic"></i>
                   <span>{{ game.deck }}</span>
                 </div>
-                <div class="opponents-count">
-                  <i class="fas fa-users"></i>
-                  <span>{{ game.totalPlayers - 1 }} Gegner</span>
+                <div class="opponents-info">
+                  <div v-if="game.opponents.length > 0" class="opponents-list">
+                    <div
+                      v-for="opponent in game.opponents.slice(0, 2)"
+                      :key="opponent.name"
+                      class="opponent-item"
+                      :title="`${opponent.name} - ${opponent.deck}`"
+                    >
+                      <span class="opponent-name">{{ opponent.name }}</span>
+                      <span class="opponent-deck">{{ opponent.deck }}</span>
+                    </div>
+                    <div v-if="game.opponents.length > 2" class="more-opponents">
+                      +{{ game.opponents.length - 2 }} weitere
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -54,78 +108,29 @@
           </div>
         </div>
       </template>
-
-      <!-- Spieler-Auswahl im Textbereich -->
-      <template #textbox>
-        <div class="player-selection-container">
-          <div class="row mb-3">
-            <div class="col-12">
-              <label for="playerSelect" class="form-label">Spieler auswählen:</label>
-              <select
-                id="playerSelect"
-                v-model="selectedPlayer"
-                class="form-select"
-                @change="loadPlayerHistory"
-              >
-                <option value="">-- Spieler wählen --</option>
-                <option
-                  v-for="player in availablePlayers"
-                  :key="player.id"
-                  :value="player.id"
-                >
-                  {{ player.name }}
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <div v-if="selectedPlayer && recentGames.length > 0" class="statistics-summary">
-            <div class="row">
-              <div class="col-md-4">
-                <div class="stat-card">
-                  <i class="fas fa-gamepad stat-icon"></i>
-                  <div class="stat-info">
-                    <span class="stat-number">{{ recentGames.length }}</span>
-                    <span class="stat-label">Spiele</span>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="stat-card">
-                  <i class="fas fa-trophy stat-icon"></i>
-                  <div class="stat-info">
-                    <span class="stat-number">{{ winCount }}</span>
-                    <span class="stat-label">Siege</span>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="stat-card">
-                  <i class="fas fa-percentage stat-icon"></i>
-                  <div class="stat-info">
-                    <span class="stat-number">{{ winRate }}%</span>
-                    <span class="stat-label">Winrate</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="loading" class="loading-state">
-            <i class="fas fa-spinner fa-spin"></i>
-            <span>Lade Spielerhistorie...</span>
-          </div>
-        </div>
-      </template>
     </ResponsiveContainer>
+
+    <!-- GameWinnerModal Komponente -->
+    <GameWinnerModal
+      :isVisible="!!selectedGame"
+      :game="selectedGame"
+      :participants="gameParticipants"
+      :loadingParticipants="loadingParticipants"
+      @close="closeWinnerModal"
+      @winnerSelected="handleWinnerSelected"
+      @ratingsSubmitted="handleRatingsSubmitted"
+      @winnerAndRatingsSubmitted="handleWinnerAndRatingsSubmitted"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import ResponsiveContainer from '@/components/ResponsiveContainer.vue';
-import { userApi, gameApi, participationApi } from '@/composables/api';
-import type { User, Participation } from '@/types';
+import GameWinnerModal from '@/components/GameWinnerModal.vue';
+import { participationApi, gameApi } from '@/composables/api';
+import { useAuth } from '@/composables/useAuth';
+import type { Participation } from '@/types';
 
 // Interface für die Spiele-Historie-Anzeige
 interface GameHistoryItem {
@@ -134,13 +139,24 @@ interface GameHistoryItem {
   deck: string;
   result: string | null;
   totalPlayers: number;
+  opponents: Array<{
+    name: string;
+    deck: string;
+  }>;
 }
 
 // State Management
-const selectedPlayer = ref<number | string>('');
-const availablePlayers = ref<Array<User>>([]);
+const currentUser = ref<{id: number, name: string} | null>(null);
 const recentGames = ref<Array<GameHistoryItem>>([]);
 const loading = ref(false);
+
+// Modal State
+const selectedGame = ref<GameHistoryItem | null>(null);
+const gameParticipants = ref<Array<Participation>>([]);
+const loadingParticipants = ref(false);
+
+// Auth Composable
+useAuth();
 
 // Computed Properties
 const winCount = computed(() => {
@@ -154,37 +170,50 @@ const winRate = computed(() => {
 });
 
 // Methods
-const loadAvailablePlayers = async () => {
-  try {
-    const players = await userApi.getAll();
-    availablePlayers.value = players;
-  } catch (error) {
-    console.error('Fehler beim Laden der Spieler:', error);
+const getCurrentUser = () => {
+  const userStr = localStorage.getItem('user');
+  if (userStr) {
+    try {
+      currentUser.value = JSON.parse(userStr);
+      return currentUser.value;
+    } catch (error) {
+      console.error('Fehler beim Parsen der User-Daten:', error);
+    }
   }
+  return null;
 };
 
 const loadPlayerHistory = async () => {
-  if (!selectedPlayer.value) {
+  if (!currentUser.value) {
     recentGames.value = [];
     return;
   }
 
   loading.value = true;
   try {
-    // Lade alle Participations des Spielers
-    const participations = await participationApi.getByUser(Number(selectedPlayer.value));
+    // Lade alle Participations des eingeloggten Spielers
+    const participations = await participationApi.getByUser(currentUser.value.id);
 
     // Lade die zugehörigen Spiele
     const gamePromises = participations.map(async (participation: Participation) => {
       const game = await gameApi.get(participation.game.id);
       const allParticipations = await participationApi.getByGame(game.id);
 
+      // Filtere Gegner heraus (alle außer dem aktuellen Spieler)
+      const opponents = allParticipations
+        .filter(p => p.user_deck.user.id !== currentUser.value!.id)
+        .map(p => ({
+          name: p.user_deck.user.name,
+          deck: p.user_deck.deck.commander || 'Unbekanntes Deck'
+        }));
+
       return {
         id: game.id,
         created_at: game.createdAt,
         deck: participation.user_deck.deck.commander || 'Unbekanntes Deck',
         result: participation.is_winner ? 'Sieg' : 'Niederlage',
-        totalPlayers: allParticipations.length
+        totalPlayers: allParticipations.length,
+        opponents: opponents
       };
     });
 
@@ -234,19 +263,50 @@ const getResultIcon = (result: string | null): string => {
   }
 };
 
-const selectGame = (game: GameHistoryItem) => {
-  emit('game-selected', game);
+const selectGame = async (game: GameHistoryItem) => {
+  selectedGame.value = game;
+  loadingParticipants.value = true;
+
+  // Lade Teilnehmer des Spiels
+  try {
+    gameParticipants.value = await participationApi.getByGame(game.id);
+  } catch (error) {
+    console.error('Fehler beim Laden der Teilnehmer:', error);
+    gameParticipants.value = [];
+  } finally {
+    loadingParticipants.value = false;
+  }
 };
 
-// Events
-const emit = defineEmits<{
-  (e: 'game-selected', game: GameHistoryItem): void;
-  (e: 'player-changed', playerId: number | string): void;
-}>();
+const closeWinnerModal = () => {
+  selectedGame.value = null;
+  gameParticipants.value = [];
+  loadingParticipants.value = false;
+
+  // Aktualisiere die Spielerhistorie nach dem Schließen
+  loadPlayerHistory();
+};
+
+// Event Handlers für GameWinnerModal
+const handleWinnerSelected = (winnerId: number) => {
+  console.log('Winner selected:', winnerId);
+};
+
+const handleRatingsSubmitted = (ratings: Record<number, number>, notes: string) => {
+  console.log('Ratings submitted:', ratings, notes);
+};
+
+const handleWinnerAndRatingsSubmitted = (winnerId: number, ratings: Record<number, number>, notes: string) => {
+  console.log('Winner and ratings submitted:', winnerId, ratings, notes);
+  closeWinnerModal();
+};
 
 // Lifecycle
 onMounted(() => {
-  loadAvailablePlayers();
+  getCurrentUser();
+  if (getCurrentUser()) {
+    loadPlayerHistory();
+  }
 });
 </script>
 
@@ -271,18 +331,18 @@ onMounted(() => {
 
 .game-card {
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  border: 1px solid #3498db;
+  border: 2px solid #34495e;
   border-radius: 8px;
   padding: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .game-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
-  border-color: #5dade2;
+  border-color: #3498db;
+  box-shadow: 0 6px 16px rgba(52, 152, 219, 0.2);
 }
 
 .game-header {
@@ -295,101 +355,166 @@ onMounted(() => {
 .game-date {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   color: #bdc3c7;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+}
+
+.game-date i {
+  color: #3498db;
 }
 
 .game-result {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-weight: bold;
-  font-size: 0.9rem;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .result-win {
-  color: #2ecc71;
+  background-color: rgba(39, 174, 96, 0.2);
+  color: #27ae60;
 }
 
 .result-loss {
+  background-color: rgba(231, 76, 60, 0.2);
   color: #e74c3c;
 }
 
 .result-unknown {
-  color: #f39c12;
+  background-color: rgba(149, 165, 166, 0.2);
+  color: #95a5a6;
 }
 
 .game-details {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.deck-used,
-.opponents-count {
+.deck-used {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
   color: #ecf0f1;
-  font-size: 0.85rem;
+  font-weight: 500;
 }
 
 .deck-used i {
   color: #9b59b6;
 }
 
+.opponents-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.opponents-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #bdc3c7;
+  font-size: 0.85rem;
+}
+
 .opponents-count i {
-  color: #3498db;
+  color: #e67e22;
+}
+
+.opponents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 20px;
+}
+
+.opponent-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #95a5a6;
+}
+
+.opponent-name {
+  color: #bdc3c7;
+}
+
+.opponent-deck {
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.more-opponents {
+  font-size: 0.75rem;
+  color: #7f8c8d;
+  font-style: italic;
 }
 
 .no-games-placeholder {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #999;
-  background: linear-gradient(135deg, #3c3c3c 0%, #2c2c2c 100%);
-  width: 100%;
   height: 100%;
-  padding: 20px;
+  padding: 40px;
+}
+
+.placeholder-content {
+  text-align: center;
+  color: #7f8c8d;
 }
 
 .empty-games-image {
-  max-width: 80%;
-  max-height: 60%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
+  width: 120px;
+  height: 120px;
   opacity: 0.6;
-  border-radius: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .no-games-text {
-  color: #bdc3c7;
   font-size: 1.1rem;
-  text-align: center;
   margin: 0;
 }
 
 .player-selection-container {
-  width: 100%;
-  padding: 15px;
+  padding: 20px;
+  color: #ecf0f1;
 }
 
-.statistics-summary {
-  margin-top: 20px;
-}
-
-.stat-card {
+.current-player-title {
+  color: #ecf0f1;
+  margin-bottom: 5px;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 15px;
-  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+}
+
+.current-player-title i {
+  color: #3498db;
+}
+
+.player-subtitle {
+  color: #bdc3c7;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.statistics-summary {
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: rgba(44, 62, 80, 0.4);
+  border: 1px solid #34495e;
   border-radius: 8px;
-  border: 1px solid #3498db;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
 }
 
 .stat-icon {
@@ -409,54 +534,16 @@ onMounted(() => {
 }
 
 .stat-label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #bdc3c7;
 }
 
-.loading-state {
+.loading-history {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
   padding: 20px;
   color: #3498db;
-  font-size: 1.1rem;
-}
-
-.form-label {
-  font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 8px;
-}
-
-.form-select {
-  background-color: #ecf0f1;
-  border: 2px solid #bdc3c7;
-  color: #2c3e50;
-  font-weight: 500;
-}
-
-.form-select:focus {
-  border-color: #3498db;
-  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .game-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
-  }
-
-  .game-details {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 5px;
-  }
-
-  .stat-card {
-    margin-bottom: 10px;
-  }
 }
 </style>
