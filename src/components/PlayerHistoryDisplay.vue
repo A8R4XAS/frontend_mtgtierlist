@@ -108,11 +108,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import ResponsiveContainer from '@/components/ResponsiveContainer.vue';
 import GameWinnerModal from '@/components/GameWinnerModal.vue';
 import GraphComponent from '@/components/GraphComponent.vue';
-import { participationApi, gameApi } from '@/composables/api';
+import { participationApi, gameApi, statisticsApi } from '@/composables/api';
 import { useAuth } from '@/composables/useAuth';
 import type { Participation } from '@/types';
 
@@ -134,6 +134,15 @@ const currentUser = ref<{id: number, name: string} | null>(null);
 const recentGames = ref<Array<GameHistoryItem>>([]);
 const loading = ref(false);
 
+// Chart Data State
+const chartLabels = ref<string[]>([]);
+const chartDatasets = ref<Array<{
+  label: string;
+  data: number[];
+  backgroundColor: string;
+  borderColor: string;
+}>>([]);
+
 // Modal State
 const selectedGame = ref<GameHistoryItem | null>(null);
 const gameParticipants = ref<Array<Participation>>([]);
@@ -142,75 +151,52 @@ const loadingParticipants = ref(false);
 // Auth Composable
 useAuth();
 
-// Computed Properties für Chart-Daten
-const chartLabels = computed(() => {
-  // Erstelle Labels für die letzten 6 Monate
-  const months = [];
-  const now = new Date();
-  for (let i = 5; i >= 0; i--) {
-    const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(monthDate.toLocaleDateString('de-DE', { month: 'short' }));
-  }
-  return months;
-});
-
-const chartDatasets = computed(() => {
-  if (recentGames.value.length === 0) {
-    // Demo-Daten für bessere Darstellung ohne echte Spiele
-    return [
+// Load Chart Data from API
+const loadChartData = async () => {
+  if (!currentUser.value) {
+    // Fallback Demo-Daten wenn kein User eingeloggt
+    chartLabels.value = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'];
+    chartDatasets.value = [
       {
         label: 'Siege',
         data: [3, 5, 2, 7, 4, 6],
-        color: '#27ae60',
         backgroundColor: 'rgba(39, 174, 96, 0.2)',
         borderColor: '#27ae60'
       },
       {
         label: 'Niederlagen',
         data: [2, 3, 4, 2, 5, 3],
-        color: '#e74c3c',
+        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+        borderColor: '#e74c3c'
+      }
+    ];
+    return;
+  }
+
+  try {
+    const chartData = await statisticsApi.getUserChartData(currentUser.value.id);
+    chartLabels.value = chartData.labels;
+    chartDatasets.value = chartData.datasets;
+  } catch (error) {
+    console.error('Fehler beim Laden der Chart-Daten:', error);
+    // Fallback zu Demo-Daten bei Fehlern
+    chartLabels.value = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'];
+    chartDatasets.value = [
+      {
+        label: 'Siege',
+        data: [0, 0, 0, 0, 0, 0],
+        backgroundColor: 'rgba(39, 174, 96, 0.2)',
+        borderColor: '#27ae60'
+      },
+      {
+        label: 'Niederlagen',
+        data: [0, 0, 0, 0, 0, 0],
         backgroundColor: 'rgba(231, 76, 60, 0.2)',
         borderColor: '#e74c3c'
       }
     ];
   }
-
-  // Gruppiere Spiele nach Monaten
-  const now = new Date();
-  const monthlyStats = [];
-
-  for (let i = 5; i >= 0; i--) {
-    const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-
-    const monthGames = recentGames.value.filter(game => {
-      const gameDate = new Date(game.created_at);
-      return gameDate >= monthStart && gameDate <= monthEnd;
-    });
-
-    const wins = monthGames.filter(game => game.result === 'Sieg').length;
-    const losses = monthGames.filter(game => game.result === 'Niederlage').length;
-
-    monthlyStats.push({ wins, losses });
-  }
-
-  return [
-    {
-      label: 'Siege',
-      data: monthlyStats.map(stat => stat.wins),
-      color: '#27ae60',
-      backgroundColor: 'rgba(39, 174, 96, 0.2)',
-      borderColor: '#27ae60'
-    },
-    {
-      label: 'Niederlagen',
-      data: monthlyStats.map(stat => stat.losses),
-      color: '#e74c3c',
-      backgroundColor: 'rgba(231, 76, 60, 0.2)',
-      borderColor: '#e74c3c'
-    }
-  ];
-});
+};
 
 // Methods
 const getCurrentUser = () => {
@@ -349,6 +335,7 @@ onMounted(() => {
   getCurrentUser();
   if (getCurrentUser()) {
     loadPlayerHistory();
+    loadChartData();
   }
 });
 </script>
