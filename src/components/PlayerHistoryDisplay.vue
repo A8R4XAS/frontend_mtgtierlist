@@ -9,44 +9,24 @@
       :manaCost="['white', 'blue', 'black', 'red', 'green']"
       cardType="Enchantment — Historie"
     >
-      <!-- Spieler-Statistiken im Artwork-Bereich -->
+      <!-- Spieler-Statistiken Graph im Artwork-Bereich -->
       <template #artwork>
-        <div class="player-selection-container">
-          <div v-if="currentUser && recentGames.length > 0" class="statistics-summary">
-            <div class="row">
-              <div class="col-md-4">
-                <div class="stat-card">
-                  <i class="fas fa-gamepad stat-icon"></i>
-                  <div class="stat-info">
-                    <span class="stat-number">{{ recentGames.length }}</span>
-                    <span class="stat-label">Spiele</span>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="stat-card">
-                  <i class="fas fa-trophy stat-icon"></i>
-                  <div class="stat-info">
-                    <span class="stat-number">{{ winCount }}</span>
-                    <span class="stat-label">Siege</span>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="stat-card">
-                  <i class="fas fa-chart-line stat-icon"></i>
-                  <div class="stat-info">
-                    <span class="stat-number">{{ winRate }}%</span>
-                    <span class="stat-label">Siegrate</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="player-stats-container">
+          <div v-if="currentUser && recentGames.length > 0" class="stats-graph-wrapper">
+            <PlayerStatsGraph
+              :userId="currentUser.id"
+              :refreshTrigger="refreshTrigger"
+            />
           </div>
 
-          <div v-if="loading" class="loading-history">
+          <div v-else-if="loading" class="loading-history">
             <i class="fas fa-spinner fa-spin"></i>
             <span>Lade Spielerhistorie...</span>
+          </div>
+
+          <div v-else class="no-data-message">
+            <i class="fas fa-chart-line"></i>
+            <p>Keine Spielerdaten verfügbar</p>
           </div>
         </div>
       </template>
@@ -125,9 +105,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import ResponsiveContainer from '@/components/ResponsiveContainer.vue';
 import GameWinnerModal from '@/components/GameWinnerModal.vue';
+import PlayerStatsGraph from '@/components/PlayerStatsGraph.vue';
 import { participationApi, gameApi } from '@/composables/api';
 import { useAuth } from '@/composables/useAuth';
 import type { Participation } from '@/types';
@@ -148,6 +129,7 @@ interface GameHistoryItem {
 // State Management
 const currentUser = ref<{id: number, name: string} | null>(null);
 const recentGames = ref<Array<GameHistoryItem>>([]);
+const refreshTrigger = ref(0);
 const loading = ref(false);
 
 // Modal State
@@ -158,16 +140,7 @@ const loadingParticipants = ref(false);
 // Auth Composable
 useAuth();
 
-// Computed Properties
-const winCount = computed(() => {
-  return recentGames.value.filter(game => game.result === 'Sieg').length;
-});
-
-const winRate = computed(() => {
-  const totalGames = recentGames.value.length;
-  if (totalGames === 0) return 0;
-  return Math.round((winCount.value / totalGames) * 100);
-});
+// Computed Properties können hier hinzugefügt werden falls benötigt
 
 // Methods
 const getCurrentUser = () => {
@@ -479,63 +452,37 @@ onMounted(() => {
   margin: 0;
 }
 
-.player-selection-container {
-  padding: 20px;
-  color: #ecf0f1;
-}
-
-.current-player-title {
-  color: #ecf0f1;
-  margin-bottom: 5px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.current-player-title i {
-  color: #3498db;
-}
-
-.player-subtitle {
-  color: #bdc3c7;
-  font-size: 0.9rem;
-  margin-bottom: 20px;
-}
-
-.statistics-summary {
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  background: rgba(44, 62, 80, 0.4);
-  border: 1px solid #34495e;
-  border-radius: 8px;
-  padding: 15px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 10px;
-}
-
-.stat-icon {
-  font-size: 1.5rem;
-  color: #3498db;
-}
-
-.stat-info {
+.player-stats-container {
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.stat-number {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #ecf0f1;
+.stats-graph-wrapper {
+  flex: 1;
+  min-height: 300px;
 }
 
-.stat-label {
-  font-size: 0.85rem;
-  color: #bdc3c7;
+.no-data-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #7f8c8d;
+  text-align: center;
+  padding: 40px;
+}
+
+.no-data-message i {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  opacity: 0.6;
+}
+
+.no-data-message p {
+  font-size: 1rem;
+  margin: 0;
 }
 
 .loading-history {
