@@ -13,9 +13,12 @@
       <template #artwork>
         <div class="player-stats-container">
           <div v-if="currentUser && recentGames.length > 0" class="stats-graph-wrapper">
-            <PlayerStatsGraph
-              :userId="currentUser.id"
-              :refreshTrigger="refreshTrigger"
+            <GraphComponent
+              title="S/N Verlauf"
+              titleIcon="fas fa-chart-line"
+              :labels="chartLabels"
+              :datasets="chartDatasets"
+              type="line"
             />
           </div>
 
@@ -105,10 +108,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import ResponsiveContainer from '@/components/ResponsiveContainer.vue';
 import GameWinnerModal from '@/components/GameWinnerModal.vue';
-import PlayerStatsGraph from '@/components/PlayerStatsGraph.vue';
+import GraphComponent from '@/components/GraphComponent.vue';
 import { participationApi, gameApi } from '@/composables/api';
 import { useAuth } from '@/composables/useAuth';
 import type { Participation } from '@/types';
@@ -129,7 +132,6 @@ interface GameHistoryItem {
 // State Management
 const currentUser = ref<{id: number, name: string} | null>(null);
 const recentGames = ref<Array<GameHistoryItem>>([]);
-const refreshTrigger = ref(0);
 const loading = ref(false);
 
 // Modal State
@@ -140,7 +142,75 @@ const loadingParticipants = ref(false);
 // Auth Composable
 useAuth();
 
-// Computed Properties können hier hinzugefügt werden falls benötigt
+// Computed Properties für Chart-Daten
+const chartLabels = computed(() => {
+  // Erstelle Labels für die letzten 6 Monate
+  const months = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(monthDate.toLocaleDateString('de-DE', { month: 'short' }));
+  }
+  return months;
+});
+
+const chartDatasets = computed(() => {
+  if (recentGames.value.length === 0) {
+    // Demo-Daten für bessere Darstellung ohne echte Spiele
+    return [
+      {
+        label: 'Siege',
+        data: [3, 5, 2, 7, 4, 6],
+        color: '#27ae60',
+        backgroundColor: 'rgba(39, 174, 96, 0.2)',
+        borderColor: '#27ae60'
+      },
+      {
+        label: 'Niederlagen',
+        data: [2, 3, 4, 2, 5, 3],
+        color: '#e74c3c',
+        backgroundColor: 'rgba(231, 76, 60, 0.2)',
+        borderColor: '#e74c3c'
+      }
+    ];
+  }
+
+  // Gruppiere Spiele nach Monaten
+  const now = new Date();
+  const monthlyStats = [];
+
+  for (let i = 5; i >= 0; i--) {
+    const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+
+    const monthGames = recentGames.value.filter(game => {
+      const gameDate = new Date(game.created_at);
+      return gameDate >= monthStart && gameDate <= monthEnd;
+    });
+
+    const wins = monthGames.filter(game => game.result === 'Sieg').length;
+    const losses = monthGames.filter(game => game.result === 'Niederlage').length;
+
+    monthlyStats.push({ wins, losses });
+  }
+
+  return [
+    {
+      label: 'Siege',
+      data: monthlyStats.map(stat => stat.wins),
+      color: '#27ae60',
+      backgroundColor: 'rgba(39, 174, 96, 0.2)',
+      borderColor: '#27ae60'
+    },
+    {
+      label: 'Niederlagen',
+      data: monthlyStats.map(stat => stat.losses),
+      color: '#e74c3c',
+      backgroundColor: 'rgba(231, 76, 60, 0.2)',
+      borderColor: '#e74c3c'
+    }
+  ];
+});
 
 // Methods
 const getCurrentUser = () => {
@@ -454,13 +524,19 @@ onMounted(() => {
 
 .player-stats-container {
   height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .stats-graph-wrapper {
   flex: 1;
-  min-height: 300px;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .no-data-message {
