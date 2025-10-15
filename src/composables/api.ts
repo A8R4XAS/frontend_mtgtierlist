@@ -15,7 +15,10 @@ import type {
   CreateUserRequest,
   UpdateUserRequest,
   LoginRequest,
-  CreateUserDeckRequest
+  CreateUserDeckRequest,
+  MonthlyStatistics,
+  UserChartData,
+  UserStatisticsSummary
 } from '../types';
 import { fetchWrapper } from './fetchWrapper';
 
@@ -270,5 +273,23 @@ export const userDeckApi = {
   // Deck-Zuordnung löschen
   delete: async (id: number): Promise<void> => {
     return fetchWrapper(`/user_deck/${id}`, undefined, 'DELETE');
+  }
+};
+
+// Statistics API
+export const statisticsApi = {
+  // Monatliche Statistiken für einen Benutzer abrufen
+  getUserMonthlyStats: async (userId: number): Promise<MonthlyStatistics[]> => {
+    return fetchWrapper(`/statistics/user/${userId}/monthly`);
+  },
+
+  // Chart-Daten für einen Benutzer abrufen
+  getUserChartData: async (userId: number): Promise<UserChartData> => {
+    return fetchWrapper(`/statistics/user/${userId}/chart-data`);
+  },
+
+  // Zusammenfassung der Statistiken für einen Benutzer abrufen
+  getUserSummary: async (userId: number): Promise<UserStatisticsSummary> => {
+    return fetchWrapper(`/statistics/user/${userId}/summary`);
   }
 };

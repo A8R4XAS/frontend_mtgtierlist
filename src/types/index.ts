@@ -117,3 +117,28 @@ export interface CreateRatingRequest {
   rater: number;
   value: number;
 }
+
+// Statistics Types
+export interface MonthlyStatistics {
+  month: string;
+  wins: number;
+  losses: number;
+  total: number;
+}
+
+export interface UserChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    backgroundColor: string;
+    borderColor: string;
+  }[];
+}
+
+export interface UserStatisticsSummary {
+  totalGames: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+}
