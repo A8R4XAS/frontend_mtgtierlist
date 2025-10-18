@@ -25,6 +25,7 @@ const fetchTableData = async () => {
     }
 
     const users = await userApi.getAll();
+    console.log('Geladene Benutzer:', users);
 
     tableRows.value = users.map((user: User) => [
       user.id,

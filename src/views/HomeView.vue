@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import The1vs1Table from '@/components/The1vs1Table.vue';
 import GamePlayerDisplay from '@/components/GameCardDisplay.vue';
 import PlayerHistoryDisplay from '@/components/PlayerHistoryDisplay.vue';
 import TheNavbar from '@/components/TheNavbar.vue';
@@ -45,12 +44,6 @@ const handleGameSelected = (game: {id: number; created_at: string; deck: string;
           <PlayerHistoryDisplay
             @game-selected="handleGameSelected"
           />
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-12">
-          <The1vs1Table />
         </div>
       </div>
 

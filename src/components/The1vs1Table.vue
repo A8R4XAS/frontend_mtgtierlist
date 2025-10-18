@@ -21,6 +21,8 @@ const fetchTableData = async () => {
 
     const games = await gameApi.getByUser(userData.id);
 
+    console.log('Geladene Spiele:', games);
+
     tableRows.value = games.map((game: Game) => [
       game.id,
       game.user_deck1.user.name,
