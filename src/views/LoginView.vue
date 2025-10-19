@@ -20,7 +20,6 @@
       </div>
       <button type="submit" class="btn btn-primary w-100">Login</button>
     </form>
-    <RouterLink to="/signup" class="d-block mt-3 text-decoration-underline">Sign up?</RouterLink>
   </div>
 </template>
 
