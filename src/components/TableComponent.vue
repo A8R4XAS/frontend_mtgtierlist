@@ -36,7 +36,7 @@
                     <i class="fas fa-trash-alt"></i> <!-- Font Awesome Icon -->
                   </button>
                   <button v-if="activeUpdate" @click="updateRow(row[0] as number)" class="btn btn-primary btn-sm">
-                    <i class="fas fa-pencil-alt"></i>
+                    <i class="fas fa-edit"></i>
                   </button>
                 </td>
               </tr>
