@@ -27,9 +27,9 @@
                 :class="`mana-${mana.toLowerCase()}`"
                 :title="`Mana: ${mana}`"
               >
-                <!-- Zeige Zahlen direkt als Text, Icons für Farben -->
+                <!-- Zeige Zahlen direkt als Text, Emojis/Unicode für Farben -->
                 <span v-if="isNumericMana(mana)" class="mana-number">{{ mana }}</span>
-                <i v-else :class="getManaIcon(mana)" class="mana-icon"></i>
+                <span v-else class="mana-icon">{{ getManaIcon(mana) }}</span>
               </div>
             </div>
           </div>
@@ -152,17 +152,17 @@ const isNumericMana = (manaType: string): boolean => {
 };
 
 /**
- * Gibt das passende Font Awesome Icon für Mana-Symbole zurück
+ * Gibt das passende Symbol für Mana-Symbole zurück (Unicode + Emojis)
  */
 const getManaIcon = (manaType: string): string => {
   const manaIcons: Record<string, string> = {
-    'white': 'fas fa-sun',
-    'blue': 'fas fa-tint',
-    'black': 'fas fa-skull',
-    'red': 'fas fa-fire',
-    'green': 'fas fa-leaf',
-    'colorless': 'fas fa-circle',
-    'default': 'fas fa-star'
+    'white': '☀',      // ☀ Sonne (Unicode) - Weiß
+    'blue': '💧',      // 💧 Wassertropfen (Emoji) - Blau
+    'black': '☠',      // ☠ Totenkopf (Unicode) - Schwarz
+    'red': '🔥',       // 🔥 Feuer (Emoji) - Rot
+    'green': '🌿',     // 🌿 Kraut (Emoji) - Grün
+    'colorless': '◯',  // ◯ Weißer Kreis (Unicode) - Farblos
+    'default': '★'     // ★ Stern (Unicode) - Default
   };
 
   return manaIcons[manaType.toLowerCase()] || manaIcons['default'];

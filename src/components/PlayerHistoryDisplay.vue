@@ -15,7 +15,7 @@
           <div v-if="currentUser && recentGames.length > 0" class="stats-graph-wrapper">
             <GraphComponent
               title="S/N Verlauf"
-              titleIcon="fas fa-chart-line"
+              titleIcon="📈"
               :labels="chartLabels"
               :datasets="chartDatasets"
               type="line"
@@ -23,12 +23,12 @@
           </div>
 
           <div v-else-if="loading" class="loading-history">
-            <i class="fas fa-spinner fa-spin"></i>
+            <span class="loading-icon">⏳</span>
             <span>Lade Spielerhistorie...</span>
           </div>
 
           <div v-else class="no-data-message">
-            <i class="fas fa-chart-line"></i>
+            <span class="no-data-icon">📊</span>
             <p>Keine Spielerdaten verfügbar</p>
           </div>
         </div>
@@ -47,17 +47,17 @@
             >
               <div class="game-header">
                 <div class="game-date">
-                  <i class="fas fa-calendar-alt"></i>
+                  <span class="date-icon">📅</span>
                   <span>{{ formatDate(game.created_at) }}</span>
                 </div>
                 <div class="game-result" :class="getResultClass(game.result)">
-                  <i :class="getResultIcon(game.result)"></i>
+                  <span class="result-icon">{{ getResultIcon(game.result) }}</span>
                   <span>{{ game.result || 'Offen' }}</span>
                 </div>
               </div>
               <div class="game-details">
                 <div class="deck-used">
-                  <i class="fas fa-magic"></i>
+                  <span class="deck-icon">✨</span>
                   <span>{{ game.deck }}</span>
                 </div>
                 <div class="opponents-info">
@@ -285,11 +285,11 @@ const getResultClass = (result: string | null): string => {
 const getResultIcon = (result: string | null): string => {
   switch (result) {
     case 'Sieg':
-      return 'fas fa-trophy';
+      return '🏆'; // Trophäe für Sieg
     case 'Niederlage':
-      return 'fas fa-times-circle';
+      return '❌'; // Rotes X für Niederlage
     default:
-      return 'fas fa-question-circle';
+      return '❓'; // Fragezeichen für unbekannt
   }
 };
 
@@ -415,6 +415,14 @@ onUnmounted(() => {
   color: #3498db;
 }
 
+.date-icon {
+  font-size: 1rem;
+}
+
+.result-icon {
+  font-size: 1rem;
+}
+
 .game-result {
   display: flex;
   align-items: center;
@@ -456,6 +464,11 @@ onUnmounted(() => {
 
 .deck-used i {
   color: #9b59b6;
+}
+
+.deck-icon {
+  color: #9b59b6;
+  font-size: 1rem;
 }
 
 .opponents-info {
@@ -562,6 +575,16 @@ onUnmounted(() => {
   font-size: 3rem;
   margin-bottom: 15px;
   opacity: 0.6;
+}
+
+.no-data-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  opacity: 0.6;
+}
+
+.loading-icon {
+  font-size: 1.5rem;
 }
 
 .no-data-message p {

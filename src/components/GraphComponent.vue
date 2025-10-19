@@ -5,7 +5,9 @@
 <template>
   <div class="graph-wrapper">
     <div v-if="title" class="graph-title">
-      <i :class="titleIcon"></i>
+      <!-- Unterstütze sowohl Font Awesome Klassen als auch Unicode/Emojis -->
+      <i v-if="isFontAwesomeIcon" :class="titleIcon"></i>
+      <span v-else class="title-icon-emoji">{{ titleIcon }}</span>
       {{ title }}
     </div>
     <div class="chart-container">
@@ -84,6 +86,11 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'line',
   height: 300
 })
+
+// Computed: Prüft ob titleIcon eine Font Awesome Klasse ist (beginnt mit "fa")
+const isFontAwesomeIcon = computed(() => {
+  return props.titleIcon.startsWith('fa');
+});
 
 // Reactive key für Chart-Updates
 const chartKey = ref(0)
@@ -211,6 +218,11 @@ const processedChartOptions = computed(() => {
 .graph-title i {
   color: #3498db;
   font-size: 1.3rem;
+}
+
+.title-icon-emoji {
+  font-size: 1.3rem;
+  line-height: 1;
 }
 
 .chart-container {
