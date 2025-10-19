@@ -71,7 +71,7 @@ export interface CreateDeckRequest {
   tempo?: string;
   tier?: number;
   weaknesses?: string;
-  owner: number;
+  userId: number;  // Geändert von 'owner' zu 'userId' um Backend-Anforderung zu entsprechen
 }
 
 export interface UpdateDeckRequest {

@@ -64,7 +64,7 @@ const submitDeck = async () => {
         }
 
         await deckApi.create({
-            owner: user.value.id,
+            userId: user.value.id,  // Backend erwartet userId statt owner
             commander: commander.value,
             thema: thema.value,
             gameplan: gameplan.value,
