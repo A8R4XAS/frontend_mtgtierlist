@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { deckApi, userApi } from '@/composables/api';
 import type { User } from '@/types';
+import { eventBus } from '@/composables/eventBus';
 
 // Formularfelder
 const commander = ref('');
@@ -76,6 +77,11 @@ const submitDeck = async () => {
         // Erfolgsmeldung anzeigen
         saveSuccess.value = true;
         errorMessage.value = '';
+
+        // Event auslösen für Deck-Liste Update
+        console.log('🎯 Deck erstellt, Event wird ausgelöst: deck:created + data:refresh');
+        eventBus.emit('deck:created');
+        eventBus.emit('data:refresh');  // Allgemeines Refresh-Event
 
         // Formular zurücksetzen
         commander.value = '';

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import TheNavbar from '@/components/TheNavbar.vue';
 import TableComponent from '@/components/TableComponent.vue';
 import DeckForm from '@/components/TheDeckForm.vue';
 import { userApi, deckApi } from '@/composables/api';
+import { eventBus } from '@/composables/eventBus';
 
 // Tabellen-Konfiguration
 const tableTitle = ref('Deine Decks');
@@ -102,6 +103,29 @@ const deleteDeck = async (deckId: number) => {
 // Komponente initialisieren
 onMounted(() => {
   fetchUser();
+
+  // Event-Listener für Deck-Erstellung
+  console.log('📋 ProfileView: Event-Listener registriert');
+  eventBus.on('deck:created', () => {
+    console.log('📋 ProfileView: deck:created Event empfangen');
+    if (user.value?.id) {
+      fetchDecks(user.value.id);
+    }
+  });
+
+  eventBus.on('data:refresh', () => {
+    console.log('📋 ProfileView: data:refresh Event empfangen');
+    if (user.value?.id) {
+      fetchDecks(user.value.id);
+    }
+  });
+});
+
+// Cleanup
+onUnmounted(() => {
+  console.log('📋 ProfileView: Event-Listener werden entfernt');
+  eventBus.off('deck:created');
+  eventBus.off('data:refresh');
 });
 </script>
 
