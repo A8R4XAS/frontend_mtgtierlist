@@ -35,7 +35,11 @@
                   <button v-if="activeDelete" @click="deleteRow(row[0] as number)" class="btn btn-danger btn-sm">
                     <i class="fas fa-trash-alt"></i> <!-- Font Awesome Icon -->
                   </button>
-                  <button v-if="activeUpdate" @click="updateRow(row[0] as number)" class="btn btn-primary btn-sm">
+                  <button
+                    v-if="activeUpdate && isRowEditable(row[0] as number)"
+                    @click="updateRow(row[0] as number)"
+                    class="btn btn-primary btn-sm"
+                  >
                     <i class="fas fa-edit"></i>
                   </button>
                 </td>
@@ -72,6 +76,7 @@ interface Props {
   userColumns: number[];
   activeDelete?: boolean;
   activeUpdate?: boolean;
+  editableRowIds?: number[];
   fontSize?: string;
 }
 
@@ -81,6 +86,7 @@ const props = withDefaults(defineProps<Props>(), {
   userColumn: false,
   activeDelete: false,
   activeUpdate: false,
+  editableRowIds: () => [],
   fontSize: '18px'
 });
 
@@ -98,6 +104,16 @@ const sortColumn = ref<number | null>(null);
 const sortOrder = ref<SortOrder>('asc');
 const currentPage = ref(1);
 const userId = ref<number | null>(null);
+
+// Prüfen ob eine Zeile bearbeitbar ist
+const isRowEditable = (rowId: number): boolean => {
+  // Wenn keine editableRowIds angegeben wurden, sind alle Zeilen bearbeitbar (Standardverhalten)
+  if (!props.editableRowIds || props.editableRowIds.length === 0) {
+    return true;
+  }
+  // Prüfen ob die rowId in der Liste der bearbeitbaren IDs ist
+  return props.editableRowIds.includes(rowId);
+};
 
 // Benutzer laden
 onMounted(() => {

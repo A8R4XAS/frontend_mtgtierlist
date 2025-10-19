@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import TheNavbar from '@/components/TheNavbar.vue';
 import TableComponent from '@/components/TableComponent.vue';
 import DeckForm from '@/components/TheDeckForm.vue';
@@ -11,6 +11,11 @@ import { eventBus } from '@/composables/eventBus';
 const tableTitle = ref('Deine Decks');
 const tableHeaders = ref(['ID', 'Commander', 'Thema', 'Gameplan', 'Tempo', 'Tier', 'Schwäche']);
 const tableRows = ref<(string | number)[][]>([]);
+
+// Alle IDs der eigenen Decks sind bearbeitbar
+const editableRowIds = computed(() => {
+  return tableRows.value.map(row => row[0] as number);
+});
 
 interface LocalUser {
   id: number;
@@ -200,6 +205,7 @@ onUnmounted(() => {
             :userColumn="false"
             :userColumns="[0]"
             :activeUpdate="true"
+            :editableRowIds="editableRowIds"
             @update-row="handleEditDeck"
             @delete-row="deleteDeck"
             :font-size="'14px'"
