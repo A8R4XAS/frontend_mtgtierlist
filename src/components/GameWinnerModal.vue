@@ -23,17 +23,17 @@ const existingRatings = ref<Array<Rating>>();r zu bewerten
         <!-- Info Box -->
         <div class="info-box">
           <i class="fas fa-info-circle"></i>
-          <p>Bewerte dich selbst und alle anderen Teilnehmer des Spiels. Wähle optional den/die Gewinner aus.</p>
+          <p>Bewerte die Performance deines Decks und die der anderen Teilnehmer des Spiels. Wähle optional den/die Gewinner aus.</p>
         </div>
 
         <!-- Selbstbewertung Section -->
         <div v-if="currentUserParticipant" class="self-rating-section">
           <h5>
             <i class="fas fa-user-check"></i>
-            Deine Leistung bewerten
+            Dein Deck bewerten
           </h5>
           <p class="rating-description">
-            Bewerte ehrlich deine eigene Spielweise und Leistung in diesem Spiel.
+            Bewerte ehrlich die Performance deines Decks in diesem Spiel.
           </p>
 
           <div class="self-rating-card">
@@ -96,14 +96,14 @@ const existingRatings = ref<Array<Rating>>();r zu bewerten
           </div>
         </div>
 
-        <!-- Rating Section für andere Spieler -->
+        <!-- Rating Section für andere Decks -->
         <div v-if="allOtherParticipants.length > 0" class="rating-section">
           <h5>
             <i class="fas fa-users"></i>
-            Andere Spieler bewerten
+            Andere Decks bewerten
           </h5>
           <p class="rating-description">
-            Bewerte alle anderen Teilnehmer basierend auf ihrer Spielweise, Fairness und dem Spielspaß.
+            Bewerte alle anderen Decks basierend auf ihrer Performance.
           </p>
 
           <div class="rating-grid">
@@ -292,11 +292,17 @@ watch(() => props.isVisible, (newValue) => {
   }
 });
 
-watch(() => props.participants, () => {
-  if (props.participants.length > 0) {
+watch(() => props.participants, (newParticipants) => {
+  if (newParticipants.length > 0) {
+    // Update Gewinner wenn Participants geladen werden
+    const currentWinners = newParticipants.filter(p => p.is_winner);
+    if (currentWinners.length > 0) {
+      selectedWinners.value = currentWinners.map(w => w.id);
+    }
+    // Lade bestehende Ratings
     loadExistingRatings();
   }
-});
+}, { immediate: true });
 
 // Methods
 const formatDate = (dateString: string): string => {
@@ -309,13 +315,22 @@ const formatDate = (dateString: string): string => {
 };
 
 const initializeModal = () => {
-  selectedWinners.value = [];
-  participantRatings.value = {};
-  existingRatings.value = [];
+  // Zurücksetzen nur wenn keine Daten vorhanden
+  if (selectedWinners.value.length === 0) {
+    participantRatings.value = {};
+    existingRatings.value = [];
+  }
 
-  // Finde aktuelle Gewinner falls vorhanden
-  const currentWinners = props.participants.filter(p => p.is_winner);
-  selectedWinners.value = currentWinners.map(w => w.id);
+  // Finde aktuelle Gewinner falls vorhanden und setze sie
+  if (props.participants.length > 0) {
+    const currentWinners = props.participants.filter(p => p.is_winner);
+    selectedWinners.value = currentWinners.map(w => w.id);
+
+    // Log für Debugging
+    if (currentWinners.length > 0) {
+      console.log('Gewinner bereits eingetragen:', currentWinners.map(w => w.user_deck.user.name));
+    }
+  }
 };
 
 const loadExistingRatings = async () => {
