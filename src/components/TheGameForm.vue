@@ -160,6 +160,7 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { gameApi, participationApi, userApi, deckApi } from '@/composables/api';
 import type { CreateParticipationRequest, User, Deck } from '@/types';
+import { eventBus } from '@/composables/eventBus';
 
 // State-Management mit Vue Refs
 // Speichert die vollständigen Datensätze für spätere ID-Lookups
@@ -505,6 +506,9 @@ const submitGame = async () => {
 
         // 5. Informiert die Elternkomponente über das neue Spiel
         emit('game-created', game.id);
+
+        // 6. Emit Event für globale Updates
+        eventBus.emit('game:created');
     } catch (error) {
         console.error('Error creating game:', error);
     }

@@ -210,6 +210,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { participationApi, ratingApi } from '@/composables/api';
 import { useAuth } from '@/composables/useAuth';
 import type { Participation, Rating, CreateRatingRequest } from '@/types';
+import { eventBus } from '@/composables/eventBus';
 
 // Interface für die Spiele-Historie-Anzeige
 interface GameHistoryItem {
@@ -410,6 +411,10 @@ const submitAllData = async () => {
     }
 
     emit('dataSubmitted', selectedWinners.value, participantRatings.value);
+
+    // Event für Rating-Aktualisierung auslösen
+    eventBus.emit('rating:submitted');
+
     closeModal();
 
   } catch (error) {

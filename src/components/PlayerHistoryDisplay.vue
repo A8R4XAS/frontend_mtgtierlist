@@ -108,13 +108,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import ResponsiveContainer from '@/components/ResponsiveContainer.vue';
 import GameWinnerModal from '@/components/GameWinnerModal.vue';
 import GraphComponent from '@/components/GraphComponent.vue';
 import { participationApi, gameApi, statisticsApi } from '@/composables/api';
 import { useAuth } from '@/composables/useAuth';
 import type { Participation } from '@/types';
+import { eventBus } from '@/composables/eventBus';
 
 // Interface für die Spiele-Historie-Anzeige
 interface GameHistoryItem {
@@ -330,6 +331,14 @@ const handleWinnerAndRatingsSubmitted = (winnerId: number, ratings: Record<numbe
   closeWinnerModal();
 };
 
+// Event-Handler für Daten-Aktualisierung
+const refreshData = () => {
+  if (currentUser.value) {
+    loadPlayerHistory();
+    loadChartData();
+  }
+};
+
 // Lifecycle
 onMounted(() => {
   getCurrentUser();
@@ -337,6 +346,18 @@ onMounted(() => {
     loadPlayerHistory();
     loadChartData();
   }
+
+  // Event-Listener für Spiel- und Rating-Updates
+  eventBus.on('game:created', refreshData);
+  eventBus.on('rating:submitted', refreshData);
+  eventBus.on('data:refresh', refreshData);
+});
+
+onUnmounted(() => {
+  // Event-Listener aufräumen
+  eventBus.off('game:created', refreshData);
+  eventBus.off('rating:submitted', refreshData);
+  eventBus.off('data:refresh', refreshData);
 });
 </script>
 
