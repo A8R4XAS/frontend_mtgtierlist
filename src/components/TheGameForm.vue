@@ -6,7 +6,7 @@
                     <form @submit.prevent="submitGame">
                         <div class="container-fluid">
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-2">
                                     <label for="player1">Spieler 1</label>
                                     <select v-model="player1_name" class="form-select" required>
                                         <option v-for="player in filteredPlayers('player1_name')" :key="player" :value="player">
@@ -14,7 +14,7 @@
                                         </option>
                                     </select>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-2">
                                     <label for="deck1">Deck 1</label>
                                     <select v-model="deck1" class="form-select" required>
                                         <option v-for="deck in deck_name" :key="deck" :value="deck">
@@ -24,7 +24,7 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-2">
                                     <label for="player2">Spieler 2</label>
                                     <select v-model="player2_name" class="form-select" required>
                                         <option v-for="player in filteredPlayers('player2_name')" :key="player" :value="player">
@@ -32,7 +32,7 @@
                                         </option>
                                     </select>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-2">
                                     <label for="deck2">Deck 2</label>
                                     <select v-model="deck2" class="form-select" required>
                                         <option v-for="deck in deck_name" :key="deck" :value="deck">
@@ -42,7 +42,7 @@
                                 </div>
                             </div>
                             <div class="row" v-if="showPlayer3">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-2">
                                     <label for="player3">Spieler 3</label>
                                     <select v-model="player3_name" class="form-select">
                                         <option v-for="player in filteredPlayers('player3_name')" :key="player" :value="player">
@@ -50,7 +50,7 @@
                                         </option>
                                     </select>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-2">
                                     <label for="deck3">Deck 3</label>
                                     <select v-model="deck3" class="form-select">
                                         <option v-for="deck in deck_name" :key="deck" :value="deck">
@@ -60,7 +60,7 @@
                                 </div>
                             </div>
                             <div class="row" v-if="showPlayer4">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-2">
                                     <label for="player4">Spieler 4</label>
                                     <select v-model="player4_name" class="form-select">
                                         <option v-for="player in filteredPlayers('player4_name')" :key="player" :value="player">
@@ -68,7 +68,7 @@
                                         </option>
                                     </select>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-2">
                                     <label for="deck4">Deck 4</label>
                                     <select v-model="deck4" class="form-select">
                                         <option v-for="deck in deck_name" :key="deck" :value="deck">
@@ -78,7 +78,7 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-2">
                                     <!-- Plus-Button für Spieler 3 -->
                                     <button
                                         v-if="areRequiredPlayersFilled && !showPlayer3"
@@ -123,7 +123,7 @@
                                         - Spieler 4
                                     </button>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 mb-2">
                                     <button
                                         type="submit"
                                         class="btn"
