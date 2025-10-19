@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import TheNavbar from '@/components/TheNavbar.vue';
-import GameForm from '@/components/TheGameForm.vue';
 import TableComponent from '@/components/TableComponent.vue';
 import DeckForm from '@/components/TheDeckForm.vue';
 import { userApi, deckApi } from '@/composables/api';
@@ -117,16 +116,7 @@ onMounted(() => {
 
       <div class="row justify-content-center mb-3 g-1">
         <div class="col-12">
-          <GameForm />
-        </div>
-      </div>
 
-      <div class="row justify-content-center mb-3 g-1">
-        <div class="col-12">
-              <!-- TODO:  Profile-Form auslagern und dann triple border drum.
-                Prüfe ob bei Deckfrom es identisch ist!
-                Auslagern weil es bei GameForm auch so ist.
-              -->
           <div class="triple-border">
             <div class="profile-form">
               <form @submit.prevent="updateUser">
