@@ -205,6 +205,11 @@ export const userApi = {
     return fetchWrapper(`/user/${id}`, data, 'PUT');
   },
 
+  // Benutzerrolle aktualisieren
+  updateRole: async (id: number, role: UserRole): Promise<User> => {
+    return fetchWrapper(`/user/${id}/role`, { role }, 'PUT');
+  },
+
   // Benutzer löschen
   delete: async (id: number): Promise<void> => {
     return fetchWrapper(`/user/${id}`, undefined, 'DELETE');

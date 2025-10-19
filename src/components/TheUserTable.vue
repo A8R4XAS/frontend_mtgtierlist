@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import TableComponent from './TableComponent.vue';
+import UserEditModal from './UserEditModal.vue';
 import { userApi } from '@/composables/api';
 import type { User } from '@/types';
 import { UserRole } from '@/types';
@@ -14,6 +15,10 @@ const tableTitle = ref('Benutzerliste');
 const tableHeaders = ref(['ID', 'Name', 'Email', 'Rolle']);
 const tableRows = ref<(string | number)[][]>([]);
 const errorMessage = ref('');
+
+// Modal State
+const showEditModal = ref(false);
+const selectedUserId = ref<number | null>(null);
 
 // Daten laden
 const fetchTableData = async () => {
@@ -39,6 +44,22 @@ const fetchTableData = async () => {
   }
 };
 
+// Modal Handlers
+const handleEditUser = (userId: number) => {
+  selectedUserId.value = userId;
+  showEditModal.value = true;
+};
+
+const handleCloseModal = () => {
+  showEditModal.value = false;
+  selectedUserId.value = null;
+};
+
+const handleUserUpdated = () => {
+  // Tabelle neu laden nach Update
+  fetchTableData();
+};
+
 // Komponente initialisieren
 
 // Warte auf Änderung von isAdmin (wird von useAdmin gesetzt)
@@ -57,10 +78,20 @@ watch(isAdmin, (newValue) => {
       :rows="tableRows"
       :rowsPerPage="5"
       :userColumns="[0]"
+      :activeUpdate="true"
+      @update-row="handleEditUser"
     />
     <div v-if="errorMessage" class="alert alert-danger mt-3">
       {{ errorMessage }}
     </div>
+
+    <!-- User Edit Modal -->
+    <UserEditModal
+      :isVisible="showEditModal"
+      :userId="selectedUserId"
+      @close="handleCloseModal"
+      @userUpdated="handleUserUpdated"
+    />
   </div>
 </template>
 
