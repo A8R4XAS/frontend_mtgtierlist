@@ -38,7 +38,7 @@ const fetchUser = async () => {
     const apiUser = await userApi.get(userData.id);
     user.value = {
       id: userData.id,
-      email: userData.email,
+      email: apiUser.email,
       password: '',
       name: apiUser.name
     };
