@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import TheNavbar from '@/components/TheNavbar.vue';
 import TableComponent from '@/components/TableComponent.vue';
 import DeckForm from '@/components/TheDeckForm.vue';
+import DeckEditModal from '@/components/DeckEditModal.vue';
 import { userApi, deckApi } from '@/composables/api';
 import { eventBus } from '@/composables/eventBus';
 
@@ -29,6 +30,10 @@ const user = ref<LocalUser>({
 // UI-Status
 const saveSuccess = ref(false);
 const errorMessage = ref('');
+
+// Modal State
+const showEditModal = ref(false);
+const selectedDeckId = ref<number | null>(null);
 
 // Benutzer laden
 const fetchUser = async () => {
@@ -97,6 +102,25 @@ const deleteDeck = async (deckId: number) => {
   } catch (error) {
     console.error('Fehler beim Löschen des Decks:', error);
     errorMessage.value = 'Fehler beim Löschen des Decks';
+  }
+};
+
+// Deck bearbeiten
+const handleEditDeck = (deckId: number) => {
+  selectedDeckId.value = deckId;
+  showEditModal.value = true;
+};
+
+// Modal schließen
+const handleCloseModal = () => {
+  showEditModal.value = false;
+  selectedDeckId.value = null;
+};
+
+// Deck wurde aktualisiert
+const handleDeckUpdated = () => {
+  if (user.value.id) {
+    fetchDecks(user.value.id);
   }
 };
 
@@ -175,6 +199,8 @@ onUnmounted(() => {
             :rowsPerPage="10"
             :userColumn="false"
             :userColumns="[0]"
+            :activeUpdate="true"
+            @update-row="handleEditDeck"
             @delete-row="deleteDeck"
             :font-size="'14px'"
           />
@@ -182,6 +208,14 @@ onUnmounted(() => {
       </div>
 
     </div>
+
+    <!-- Deck Edit Modal -->
+    <DeckEditModal
+      :isVisible="showEditModal"
+      :deckId="selectedDeckId"
+      @close="handleCloseModal"
+      @deckUpdated="handleDeckUpdated"
+    />
 
   </main>
 </template>
