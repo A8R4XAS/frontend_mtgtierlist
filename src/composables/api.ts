@@ -1,24 +1,25 @@
 export const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-import type {
-  Game,
-  Participation,
-  Rating,
-  User,
-  Deck,
-  UserDeck,
-  CreateGameRequest,
-  CreateParticipationRequest,
-  CreateRatingRequest,
-  CreateDeckRequest,
-  UpdateDeckRequest,
-  CreateUserRequest,
-  UpdateUserRequest,
-  LoginRequest,
-  CreateUserDeckRequest,
-  MonthlyStatistics,
-  UserChartData,
-  UserStatisticsSummary
+import {
+  type Game,
+  type Participation,
+  type Rating,
+  type User,
+  type Deck,
+  type UserDeck,
+  type CreateGameRequest,
+  type CreateParticipationRequest,
+  type CreateRatingRequest,
+  type CreateDeckRequest,
+  type UpdateDeckRequest,
+  type CreateUserRequest,
+  type UpdateUserRequest,
+  type LoginRequest,
+  type CreateUserDeckRequest,
+  type MonthlyStatistics,
+  type UserChartData,
+  type UserStatisticsSummary,
+  UserRole
 } from '../types';
 import { fetchWrapper } from './fetchWrapper';
 
@@ -27,10 +28,16 @@ export const authApi = {
   validateRole: async () => {
     try {
       const response = await fetchWrapper('/auth/validate-role');
-      return response.role;
+
+      // Konvertiere String zu Enum
+      const roleString = response.role as string;
+      const role = roleString === 'admin' ? UserRole.ADMIN : UserRole.USER;
+
+      return role;
+
     } catch (error) {
-      console.error('Error validating role:', error);
-      return null;
+      console.error('❌ Error validating role:', error);
+      return UserRole.USER; // Fallback zu USER statt nul
     }
   }
 };

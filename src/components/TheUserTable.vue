@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import TableComponent from './TableComponent.vue';
 import { userApi } from '@/composables/api';
 import type { User } from '@/types';
@@ -25,7 +25,6 @@ const fetchTableData = async () => {
     }
 
     const users = await userApi.getAll();
-    console.log('Geladene Benutzer:', users);
 
     tableRows.value = users.map((user: User) => [
       user.id,
@@ -41,9 +40,13 @@ const fetchTableData = async () => {
 };
 
 // Komponente initialisieren
-onMounted(() => {
-  fetchTableData();
-});
+
+// Warte auf Änderung von isAdmin (wird von useAdmin gesetzt)
+watch(isAdmin, (newValue) => {
+  if (newValue === true) {
+    fetchTableData();
+  }
+}, { immediate: true }); // immediate: true führt watch sofort aus
 </script>
 
 <template>
@@ -52,7 +55,7 @@ onMounted(() => {
       :title="tableTitle"
       :headers="tableHeaders"
       :rows="tableRows"
-      :rowsPerPage="3"
+      :rowsPerPage="5"
       :userColumns="[0]"
     />
     <div v-if="errorMessage" class="alert alert-danger mt-3">
