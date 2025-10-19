@@ -33,14 +33,14 @@ const handleGameSelected = (game: {id: number; created_at: string; deck: string;
       </div>
 
       <div class="row">
-        <div class="col-6">
+        <div class="col-12 col-xl-6 mb-3">
           <GamePlayerDisplay
             @game-created="handleGameCreated"
             @players-changed="handlePlayersChanged"
           />
         </div>
 
-        <div class="col-6">
+        <div class="col-12 col-xl-6 mb-3">
           <PlayerHistoryDisplay
             @game-selected="handleGameSelected"
           />
