@@ -47,7 +47,7 @@ const signup = async () => {
       name: name.value.trim(),
       email: email.value.trim(),
       password: password.value
-    }, 'POST');
+    }, 'POST') as { accessToken: string };
 
     // Access Token speichern (User-Daten sind im Token enthalten)
     if (response.accessToken) {

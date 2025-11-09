@@ -27,10 +27,10 @@ import { fetchWrapper } from './fetchWrapper';
 export const authApi = {
   validateRole: async () => {
     try {
-      const response = await fetchWrapper('/auth/validate-role');
+      const response = await fetchWrapper('/auth/validate-role') as { role: string };
 
       // Konvertiere String zu Enum
-      const roleString = response.role as string;
+      const roleString = response.role;
       const role = roleString === 'admin' ? UserRole.ADMIN : UserRole.USER;
 
       return role;
@@ -49,27 +49,27 @@ export const authApi = {
 export const gameApi = {
   // Alle Spiele abrufen
   getAll: async (): Promise<Game[]> => {
-    return fetchWrapper('/game');
+    return await fetchWrapper('/game') as Game[];
   },
 
   // Ein spezifisches Spiel abrufen
   get: async (id: number): Promise<Game> => {
-    return fetchWrapper(`/game/${id}`);
+    return await fetchWrapper(`/game/${id}`) as Game;
   },
 
   // Neues Spiel erstellen
   create: async (data?: CreateGameRequest): Promise<Game> => {
-    return fetchWrapper('/game', data, 'POST');
+    return await fetchWrapper('/game', data, 'POST') as Game;
   },
 
   // Spiel löschen
   delete: async (id: number): Promise<void> => {
-    return fetchWrapper(`/game/${id}`, undefined, 'DELETE');
+    await fetchWrapper(`/game/${id}`, undefined, 'DELETE');
   },
 
   // Spiele eines Benutzers abrufen
   getByUser: async (userId: number): Promise<Game[]> => {
-    return fetchWrapper(`/game/user/${userId}`);
+    return await fetchWrapper(`/game/user/${userId}`) as Game[];
   }
 };
 
@@ -80,52 +80,52 @@ export const gameApi = {
 export const participationApi = {
   // Alle Teilnahmen abrufen
   getAll: async (): Promise<Participation[]> => {
-    return fetchWrapper('/participation');
+    return await fetchWrapper('/participation') as Participation[];
   },
 
   // Eine spezifische Teilnahme abrufen
   get: async (id: number): Promise<Participation> => {
-    return fetchWrapper(`/participation/${id}`);
+    return await fetchWrapper(`/participation/${id}`) as Participation;
   },
 
   // Neue Teilnahme erstellen
   create: async (data: CreateParticipationRequest): Promise<Participation> => {
-    return fetchWrapper('/participation', data, 'POST');
+    return await fetchWrapper('/participation', data, 'POST') as Participation;
   },
 
   // Teilnahme aktualisieren
   update: async (id: number, data: Partial<CreateParticipationRequest>): Promise<Participation> => {
-    return fetchWrapper(`/participation/${id}`, data, 'PUT');
+    return await fetchWrapper(`/participation/${id}`, data, 'PUT') as Participation;
   },
 
   // Mehrere Teilnahmen auf einmal erstellen
   createBulk: async (data: CreateParticipationRequest[]): Promise<Participation[]> => {
-    return fetchWrapper('/participation/bulk', data, 'POST');
+    return await fetchWrapper('/participation/bulk', data, 'POST') as Participation[];
   },
 
   // Teilnahme löschen
   delete: async (id: number): Promise<void> => {
-    return fetchWrapper(`/participation/${id}`, undefined, 'DELETE');
+    await fetchWrapper(`/participation/${id}`, undefined, 'DELETE');
   },
 
   // Teilnahmen eines bestimmten Spiels abrufen
   getByGame: async (gameId: number): Promise<Participation[]> => {
-    return fetchWrapper(`/participation/game/${gameId}`);
+    return await fetchWrapper(`/participation/game/${gameId}`) as Participation[];
   },
 
   // Teilnahmen eines bestimmten Benutzers abrufen
   getByUser: async (userId: number): Promise<Participation[]> => {
-    return fetchWrapper(`/participation/user/${userId}`);
+    return await fetchWrapper(`/participation/user/${userId}`) as Participation[];
   },
 
   // Teilnahmen mit einem bestimmten Deck abrufen
   getByDeck: async (deckId: number): Promise<Participation[]> => {
-    return fetchWrapper(`/participation/deck/${deckId}`);
+    return await fetchWrapper(`/participation/deck/${deckId}`) as Participation[];
   },
 
   // Gewinner einer Teilnahme setzen
   setWinner: async (id: number): Promise<Participation> => {
-    return fetchWrapper(`/participation/${id}/winner`, undefined, 'PUT');
+    return await fetchWrapper(`/participation/${id}/winner`, undefined, 'PUT') as Participation;
   }
 };
 
@@ -136,37 +136,37 @@ export const participationApi = {
 export const ratingApi = {
   // Alle Bewertungen abrufen
   getAll: async (): Promise<Rating[]> => {
-    return fetchWrapper('/rating');
+    return await fetchWrapper('/rating') as Rating[];
   },
 
   // Eine spezifische Bewertung abrufen
   get: async (id: number): Promise<Rating> => {
-    return fetchWrapper(`/rating/${id}`);
+    return await fetchWrapper(`/rating/${id}`) as Rating;
   },
 
   // Neue Bewertung erstellen
   create: async (data: CreateRatingRequest): Promise<Rating> => {
-    return fetchWrapper('/rating', data, 'POST');
+    return await fetchWrapper('/rating', data, 'POST') as Rating;
   },
 
   // Bewertung aktualisieren
   update: async (id: number, data: Partial<CreateRatingRequest>): Promise<Rating> => {
-    return fetchWrapper(`/rating/${id}`, data, 'PUT');
+    return await fetchWrapper(`/rating/${id}`, data, 'PUT') as Rating;
   },
 
   // Bewertung löschen
   delete: async (id: number): Promise<void> => {
-    return fetchWrapper(`/rating/${id}`, undefined, 'DELETE');
+    await fetchWrapper(`/rating/${id}`, undefined, 'DELETE');
   },
 
   // Bewertungen für eine bestimmte Teilnahme abrufen
   getByParticipation: async (participationId: number): Promise<Rating[]> => {
-    return fetchWrapper(`/rating/participation/${participationId}`);
+    return await fetchWrapper(`/rating/participation/${participationId}`) as Rating[];
   },
 
   // Bewertungen von einem bestimmten Benutzer abrufen
   getByRater: async (raterId: number): Promise<Rating[]> => {
-    return fetchWrapper(`/rating/rater/${raterId}`);
+    return await fetchWrapper(`/rating/rater/${raterId}`) as Rating[];
   }
 };
 
@@ -177,47 +177,47 @@ export const ratingApi = {
 export const userApi = {
   // Alle Benutzer abrufen
   getAll: async (): Promise<User[]> => {
-    return fetchWrapper('/user');
+    return await fetchWrapper('/user') as User[];
   },
 
   // Einen spezifischen Benutzer abrufen
   get: async (id: number): Promise<User> => {
-    return fetchWrapper(`/user/${id}`);
+    return await fetchWrapper(`/user/${id}`) as User;
   },
 
   // Neuen Benutzer registrieren
   create: async (data: CreateUserRequest): Promise<User> => {
-    return fetchWrapper('/auth/signup', data, 'POST');
+    return await fetchWrapper('/auth/signup', data, 'POST') as User;
   },
 
   // Benutzer einloggen
   login: async (data: LoginRequest): Promise<{ user: User; token: string }> => {
-    return fetchWrapper('/auth/login', data, 'POST');
+    return await fetchWrapper('/auth/login', data, 'POST') as { user: User; token: string };
   },
 
   // Benutzer ausloggen
   logout: async (): Promise<void> => {
-    return fetchWrapper('/auth/logout', undefined, 'POST');
+    await fetchWrapper('/auth/logout', undefined, 'POST');
   },
 
   // Benutzer aktualisieren
   update: async (id: number, data: UpdateUserRequest): Promise<User> => {
-    return fetchWrapper(`/user/${id}`, data, 'PUT');
+    return await fetchWrapper(`/user/${id}`, data, 'PUT') as User;
   },
 
   // Benutzerrolle aktualisieren
   updateRole: async (id: number, role: UserRole): Promise<User> => {
-    return fetchWrapper(`/user/${id}/role`, { role }, 'PUT');
+    return await fetchWrapper(`/user/${id}/role`, { role }, 'PUT') as User;
   },
 
   // Benutzer löschen
   delete: async (id: number): Promise<void> => {
-    return fetchWrapper(`/user/${id}`, undefined, 'DELETE');
+    await fetchWrapper(`/user/${id}`, undefined, 'DELETE');
   },
 
   // Benutzerpasswort ändern
   changePassword: async (id: number, newPassword: string): Promise<void> => {
-    return fetchWrapper(`/user/${id}/password`, { password: newPassword }, 'PUT');
+    await fetchWrapper(`/user/${id}/password`, { password: newPassword }, 'PUT');
   }
 };
 
@@ -228,37 +228,37 @@ export const userApi = {
 export const deckApi = {
   // Alle Decks abrufen
   getAll: async (): Promise<Deck[]> => {
-    return fetchWrapper('/deck');
+    return await fetchWrapper('/deck') as Deck[];
   },
 
   // Ein spezifisches Deck abrufen
   get: async (id: number): Promise<Deck> => {
-    return fetchWrapper(`/deck/${id}`);
+    return await fetchWrapper(`/deck/${id}`) as Deck;
   },
 
   // Neues Deck erstellen
   create: async (data: CreateDeckRequest): Promise<Deck> => {
-    return fetchWrapper('/deck', data, 'POST');
+    return await fetchWrapper('/deck', data, 'POST') as Deck;
   },
 
   // Deck aktualisieren
   update: async (id: number, data: UpdateDeckRequest): Promise<Deck> => {
-    return fetchWrapper(`/deck/${id}`, data, 'PUT');
+    return await fetchWrapper(`/deck/${id}`, data, 'PUT') as Deck;
   },
 
   // Deck löschen
   delete: async (id: number): Promise<void> => {
-    return fetchWrapper(`/deck/${id}`, undefined, 'DELETE');
+    await fetchWrapper(`/deck/${id}`, undefined, 'DELETE');
   },
 
   // Decks eines bestimmten Besitzers abrufen
   getByOwner: async (ownerId: number): Promise<Deck[]> => {
-    return fetchWrapper(`/deck/owner/${ownerId}`);
+    return await fetchWrapper(`/deck/owner/${ownerId}`) as Deck[];
   },
 
   // Decks mit bestimmtem Commander abrufen
   getByCommander: async (commander: string): Promise<Deck[]> => {
-    return fetchWrapper(`/deck/commander/${commander}`);
+    return await fetchWrapper(`/deck/commander/${commander}`) as Deck[];
   }
 };
 
@@ -269,22 +269,22 @@ export const deckApi = {
 export const userDeckApi = {
   // Alle Deck-Zuordnungen abrufen
   getAll: async (): Promise<UserDeck[]> => {
-    return fetchWrapper('/user_deck');
+    return await fetchWrapper('/user_deck') as UserDeck[];
   },
 
   // Eine spezifische Deck-Zuordnung abrufen
   get: async (id: number): Promise<UserDeck> => {
-    return fetchWrapper(`/user_deck/${id}`);
+    return await fetchWrapper(`/user_deck/${id}`) as UserDeck;
   },
 
   // Neue Deck-Zuordnung erstellen
   create: async (data: CreateUserDeckRequest): Promise<UserDeck> => {
-    return fetchWrapper('/user_deck', data, 'POST');
+    return await fetchWrapper('/user_deck', data, 'POST') as UserDeck;
   },
 
   // Deck-Zuordnung löschen
   delete: async (id: number): Promise<void> => {
-    return fetchWrapper(`/user_deck/${id}`, undefined, 'DELETE');
+    await fetchWrapper(`/user_deck/${id}`, undefined, 'DELETE');
   }
 };
 
@@ -292,16 +292,16 @@ export const userDeckApi = {
 export const statisticsApi = {
   // Monatliche Statistiken für einen Benutzer abrufen
   getUserMonthlyStats: async (userId: number): Promise<MonthlyStatistics[]> => {
-    return fetchWrapper(`/statistics/user/${userId}/monthly`);
+    return await fetchWrapper(`/statistics/user/${userId}/monthly`) as MonthlyStatistics[];
   },
 
   // Chart-Daten für einen Benutzer abrufen
   getUserChartData: async (userId: number): Promise<UserChartData> => {
-    return fetchWrapper(`/statistics/user/${userId}/chart-data`);
+    return await fetchWrapper(`/statistics/user/${userId}/chart-data`) as UserChartData;
   },
 
   // Zusammenfassung der Statistiken für einen Benutzer abrufen
   getUserSummary: async (userId: number): Promise<UserStatisticsSummary> => {
-    return fetchWrapper(`/statistics/user/${userId}/summary`);
+    return await fetchWrapper(`/statistics/user/${userId}/summary`) as UserStatisticsSummary;
   }
 };
