@@ -4,13 +4,15 @@ import TableComponent from './TableComponent.vue';
 import DeckEditModal from './DeckEditModal.vue';
 import { deckApi } from '@/composables/api';
 import { useAdmin } from '@/composables/useAdmin';
+import { useAuth } from '@/composables/useAuth';
 import type { Deck } from '@/types';
 
 // Admin-Check
 const { isAdmin } = useAdmin();
 
 // Aktueller Benutzer
-const currentUserId = ref<number | null>(null);
+const { getCurrentUser } = useAuth();
+const currentUserId = computed(() => getCurrentUser()?.id || null);
 
 // Tabellenkonfiguration
 const tableTitle = ref('Deckliste');
@@ -67,19 +69,6 @@ const fetchTableData = async () => {
   }
 };
 
-// Aktuellen Benutzer laden
-const loadCurrentUser = () => {
-  try {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      const userData = JSON.parse(storedUser);
-      currentUserId.value = userData.id;
-    }
-  } catch (error) {
-    console.error('Fehler beim Laden des Benutzers:', error);
-  }
-};
-
 // Deck bearbeiten
 const handleEditDeck = (deckId: number) => {
   selectedDeckId.value = deckId;
@@ -99,7 +88,6 @@ const handleDeckUpdated = () => {
 
 // Komponente initialisieren
 onMounted(() => {
-  loadCurrentUser();
   fetchTableData();
 });
 </script>

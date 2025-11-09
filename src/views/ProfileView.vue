@@ -6,6 +6,7 @@ import DeckForm from '@/components/TheDeckForm.vue';
 import DeckEditModal from '@/components/DeckEditModal.vue';
 import { userApi, deckApi } from '@/composables/api';
 import { eventBus } from '@/composables/eventBus';
+import { useAuth } from '@/composables/useAuth';
 
 // Tabellen-Konfiguration
 const tableTitle = ref('Deine Decks');
@@ -41,11 +42,11 @@ const showEditModal = ref(false);
 const selectedDeckId = ref<number | null>(null);
 
 // Benutzer laden
+const { getCurrentUser } = useAuth();
 const fetchUser = async () => {
   try {
-    const localUser = localStorage.getItem('user');
-    if (!localUser) return;
-    const userData = JSON.parse(localUser);
+    const userData = getCurrentUser();
+    if (!userData) return;
     const apiUser = await userApi.get(userData.id);
     user.value = {
       id: userData.id,

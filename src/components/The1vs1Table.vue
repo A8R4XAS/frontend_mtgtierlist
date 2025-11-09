@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue';
 import TableComponent from './TableComponent.vue';
 import { gameApi } from '@/composables/api';
+import { useAuth } from '@/composables/useAuth';
 import type { Game } from '@/types';
 
 // Tabellenkonfiguration
@@ -11,12 +12,10 @@ const tableRows = ref<(string | number)[][]>([]);
 const errorMessage = ref('');
 
 // Daten laden
+const { getCurrentUser } = useAuth();
 const fetchTableData = async () => {
   try {
-    const localUser = localStorage.getItem('user');
-    if (!localUser) return;
-
-    const userData = JSON.parse(localUser);
+    const userData = getCurrentUser();
     if (!userData?.id) return;
 
     const games = await gameApi.getByUser(userData.id);

@@ -250,22 +250,14 @@ const participantRatings = ref<Record<number, number>>({});
 const existingRatings = ref<Array<Rating>>([]);
 
 // Auth Composable
-useAuth();
+const { getCurrentUser: getUser } = useAuth();
 
 // Current User
 const currentUser = ref<{id: number, name: string} | null>(null);
 
 const getCurrentUser = () => {
-  const userStr = localStorage.getItem('user');
-  if (userStr) {
-    try {
-      currentUser.value = JSON.parse(userStr);
-      return currentUser.value;
-    } catch (error) {
-      console.error('Fehler beim Parsen der User-Daten:', error);
-    }
-  }
-  return null;
+  currentUser.value = getUser();
+  return currentUser.value;
 };
 
 // Computed Properties

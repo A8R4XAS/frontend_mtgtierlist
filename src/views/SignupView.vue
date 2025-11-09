@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { userApi } from '@/composables/api';
+import { fetchWrapper } from '@/composables/fetchWrapper';
+import { useTokenService } from '@/composables/tokenService';
 
 // Router
 const router = useRouter();
+
+// Token Service
+const { setAccessToken } = useTokenService();
 
 // Formularfelder
 const name = ref('');
@@ -39,16 +43,21 @@ const signup = async () => {
     }
 
     // Benutzer registrieren
-    await userApi.create({
+    const response = await fetchWrapper('/auth/signup', {
       name: name.value.trim(),
       email: email.value.trim(),
       password: password.value
-    });
+    }, 'POST');
+
+    // Access Token speichern (User-Daten sind im Token enthalten)
+    if (response.accessToken) {
+      setAccessToken(response.accessToken);
+    }
 
     // Erfolgsmeldung und Weiterleitung
     successMessage.value = 'Registrierung erfolgreich!';
     setTimeout(() => {
-      router.push('/login');
+      router.push('/');
     }, 1500);
 
   } catch (error) {

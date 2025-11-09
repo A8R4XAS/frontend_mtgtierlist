@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import TheNavbar from '@/components/TheNavbar.vue';
 import type { Rating } from '@/types';
 import { ratingApi } from '@/composables/api';
+import { useAuth } from '@/composables/useAuth';
 
 // Status
 const isLoading = ref(false);
@@ -15,11 +16,9 @@ const searchQuery = ref('');
 // Daten
 const ratings = ref<Rating[]>([]);
 
-// Benutzerdaten aus dem localStorage
-const currentUser = computed(() => {
-  const userStr = localStorage.getItem('user');
-  return userStr ? JSON.parse(userStr) : null;
-});
+// Benutzerdaten aus JWT Token
+const { getCurrentUser } = useAuth();
+const currentUser = computed(() => getCurrentUser());
 
 // Daten laden
 const fetchRatings = async () => {

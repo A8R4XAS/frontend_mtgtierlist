@@ -60,6 +60,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
+import { useAuth } from '@/composables/useAuth';
 
 // Typen
 type TableRow = (string | number)[];
@@ -116,10 +117,11 @@ const isRowEditable = (rowId: number): boolean => {
 };
 
 // Benutzer laden
+const { getCurrentUser } = useAuth();
 onMounted(() => {
-  const localUser = localStorage.getItem('user');
-  if (localUser) {
-    userId.value = JSON.parse(localUser).id;
+  const userData = getCurrentUser();
+  if (userData) {
+    userId.value = userData.id;
     applyFilter();
   }
 });

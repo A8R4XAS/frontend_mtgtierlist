@@ -150,7 +150,7 @@ const gameParticipants = ref<Array<Participation>>([]);
 const loadingParticipants = ref(false);
 
 // Auth Composable
-useAuth();
+// useAuth() wird in der lokalen getCurrentUser Funktion verwendet
 
 // Load Chart Data from API
 const loadChartData = async () => {
@@ -200,17 +200,10 @@ const loadChartData = async () => {
 };
 
 // Methods
+const { getCurrentUser: getUser } = useAuth();
 const getCurrentUser = () => {
-  const userStr = localStorage.getItem('user');
-  if (userStr) {
-    try {
-      currentUser.value = JSON.parse(userStr);
-      return currentUser.value;
-    } catch (error) {
-      console.error('Fehler beim Parsen der User-Daten:', error);
-    }
-  }
-  return null;
+  currentUser.value = getUser();
+  return currentUser.value;
 };
 
 const loadPlayerHistory = async () => {
@@ -341,8 +334,9 @@ const refreshData = () => {
 
 // Lifecycle
 onMounted(() => {
+  // Aktuellen User aus JWT Token laden
   getCurrentUser();
-  if (getCurrentUser()) {
+  if (currentUser.value) {
     loadPlayerHistory();
     loadChartData();
   }

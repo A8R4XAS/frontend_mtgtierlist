@@ -8,7 +8,7 @@ import { UserRole } from '@/types';
 import { userApi } from '@/composables/api';
 import { useAdmin } from '@/composables/useAdmin';
 
-const { loggedIn, logout } = useAuth();
+const { loggedIn, logout, getCurrentUser } = useAuth();
 
 // Benutzerdaten
 const currentUser = ref<Partial<User>>({
@@ -31,10 +31,7 @@ const closeDeckPopup = () => { showDeckPopup.value = false; };
 // Benutzer laden
 const fetchUser = async () => {
   try {
-    const localUser = localStorage.getItem('user');
-    if (!localUser) return;
-
-    const userData = JSON.parse(localUser);
+    const userData = getCurrentUser();
     if (!userData?.id) return;
 
     const apiUser = await userApi.get(userData.id);

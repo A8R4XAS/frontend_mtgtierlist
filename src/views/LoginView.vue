@@ -9,30 +9,51 @@
   </div>
   <div class="cardType"><h1>Login</h1></div>
   <div class="login" ref="login">
-    <form @submit.prevent="login">
+    <form @submit.prevent="loginHandler">
       <div class="mb-3">
         <label for="email" class="form-label">Email</label>
-        <input v-model="email" type="text" id="email" class="form-control">
+        <input v-model="email" type="text" id="email" class="form-control" required>
       </div>
       <div class="mb-3">
         <label for="password" class="form-label">Password</label>
-        <input v-model="password" type="password" id="password" class="form-control">
+        <input v-model="password" type="password" id="password" class="form-control" required>
       </div>
-      <button type="submit" class="btn btn-primary w-100">Login</button>
+      <div class="mb-3 form-check">
+        <input
+          type="checkbox"
+          class="form-check-input"
+          id="rememberMe"
+          v-model="rememberMe"
+        >
+        <label class="form-check-label" for="rememberMe">
+          Angemeldet bleiben
+        </label>
+        <div class="form-text">
+          Aktivieren Sie diese Option, um eingeloggt zu bleiben, auch wenn Sie den Browser schließen.
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary w-100" :disabled="loading">
+        {{ loading ? 'Wird angemeldet...' : 'Login' }}
+      </button>
+      <div v-if="errorMessage" class="alert alert-danger mt-3" role="alert">
+        {{ errorMessage }}
+      </div>
     </form>
   </div>
 </template>
 
 <script lang="ts">
-import { fetchWrapper } from '@/composables/fetchWrapper'
+import { useAuth } from '@/composables/useAuth';
 
 export default {
   data() {
     return {
       email: '',
       password: '',
+      rememberMe: false,
       loginWidth: 0,
-      errorMessage: ''
+      errorMessage: '',
+      loading: false
     }
   },
   mounted() {
@@ -51,20 +72,24 @@ export default {
       const loginElement = this.$refs.login as HTMLElement
       this.loginWidth = loginElement.clientWidth
     },
-    async login() {
-      try {
-        const data = await fetchWrapper(
-          '/auth/login',
-          { email: this.email, password: this.password },
-          'POST'
-        )
+    async loginHandler() {
+      this.errorMessage = '';
+      this.loading = true;
 
-        localStorage.setItem('user', JSON.stringify(data))
-        await new Promise(resolve => setTimeout(resolve, 100)); // kurze Pause für Session-Cookie
-        this.$router.push('/')
+      try {
+        const { login } = useAuth();
+        await login(
+          { email: this.email, password: this.password },
+          this.rememberMe
+        );
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+        this.$router.push('/');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
-        this.errorMessage = error.message || 'Error logging in'
+        this.errorMessage = error.message || 'Fehler beim Anmelden';
+      } finally {
+        this.loading = false;
       }
     }
   }

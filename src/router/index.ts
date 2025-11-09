@@ -5,7 +5,11 @@ import SignupView from '@/views/SignupView.vue'
 import PlayerView from '@/views/PlayerView.vue'
 import DeckView from '@/views/DeckView.vue'
 import ProfileView from '../views/ProfileView.vue'
-import NotFoundView from '../views/NotFoundView.vue' // Import der neuen 404-Seite
+import NotFoundView from '../views/NotFoundView.vue'
+import { useTokenService } from '@/composables/tokenService'
+import { fetchWrapper } from '@/composables/fetchWrapper'
+
+const { getAccessToken } = useTokenService();
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -75,25 +79,52 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
-  const userStr = localStorage.getItem('user');
+router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin);
 
-  if (!userStr && requiresAuth) {
+  // Route benötigt keine Authentifizierung
+  if (!requiresAuth) {
+    next();
+    return;
+  }
+
+  // Prüfe Token
+  const token = getAccessToken();
+
+  if (!token) {
+    console.log('Keine Authentifizierung gefunden, leite zu Login weiter');
     next('/login');
     return;
   }
 
-  if (requiresAdmin) {
-    const user = userStr ? JSON.parse(userStr) : null;
-    if (!user || user.role !== 'admin') {
-      next('/'); // Redirect nicht-Admin User zur Startseite
-      return;
-    }
-  }
+  // Validiere Token beim Backend
+  try {
+    await fetchWrapper('/auth/validate-role', undefined, 'GET');
 
-  next();
+    // Admin-Check (User-Daten werden aus Token extrahiert im Backend)
+    if (requiresAdmin) {
+      // Token decode um Role zu prüfen
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload.role !== 'ADMIN') {
+          console.log('Keine Admin-Berechtigung');
+          next('/');
+          return;
+        }
+      } catch (error) {
+        console.error('Token decode error:', error);
+        next('/login');
+        return;
+      }
+    }
+
+    next();
+  } catch (error) {
+    // Token ungültig oder Session abgelaufen
+    console.log('Token-Validierung fehlgeschlagen, leite zu Login weiter',error);
+    next('/login');
+  }
 })
 
 export default router

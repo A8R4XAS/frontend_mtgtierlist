@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { deckApi, userApi } from '@/composables/api';
 import type { User } from '@/types';
 import { eventBus } from '@/composables/eventBus';
+import { useAuth } from '@/composables/useAuth';
 
 // Formularfelder
 const commander = ref('');
@@ -40,15 +41,15 @@ const isSmall = (elem: string) => {
 };
 
 // Benutzerdaten laden
+const { getCurrentUser } = useAuth();
 const fetchUser = async () => {
     try {
-        const storedUser = localStorage.getItem('user');
-        if (!storedUser) {
+        const userData = getCurrentUser();
+        if (!userData) {
             errorMessage.value = 'Bitte melden Sie sich an, um ein Deck zu erstellen.';
             return;
         }
 
-        const userData = JSON.parse(storedUser);
         user.value = await userApi.get(userData.id);
     } catch (error) {
         console.error('Fehler beim Laden der Benutzerdaten:', error);
